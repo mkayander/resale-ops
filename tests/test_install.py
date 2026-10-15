@@ -13,8 +13,8 @@ class InstallTest(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             for agent, location in installer.LOCATIONS.items():
                 target = installer.install(agent, tmp)
-                self.assertEqual(target, Path(tmp).resolve() / location / "skills/marketplace-listing")
-                source = ROOT / "skills/marketplace-listing"
+                self.assertEqual(target, Path(tmp).resolve() / location / "skills/resale-ops")
+                source = ROOT / "skills/resale-ops"
                 files = [p for p in source.rglob("*") if p.is_file()]
                 self.assertTrue(files)
                 for file in files:

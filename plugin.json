@@ -1,8 +1,8 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
-  "name": "marketplace-listing-agent",
+  "name": "resale-ops",
   "version": "0.2.0",
-  "description": "Prepare evidence-based marketplace listings from photos and fill browser drafts with explicit publication approval.",
+  "description": "Prepare evidence-based resale listings across marketplaces and fill browser drafts with explicit publication approval.",
   "license": "MIT",
   "keywords": ["marketplaces", "classifieds", "resale", "browser", "russian"]
 }

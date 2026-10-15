@@ -8,8 +8,8 @@ LOCATIONS = {"codex": ".agents", "claude": ".claude", "cursor": ".cursor"}
 
 def install(agent, destination):
     base = Path(destination).expanduser().resolve()
-    target = base / LOCATIONS[agent] / "skills" / "marketplace-listing"
-    source = ROOT / "skills" / "marketplace-listing"
+    target = base / LOCATIONS[agent] / "skills" / "resale-ops"
+    source = ROOT / "skills" / "resale-ops"
     if target.exists() or target.is_symlink():
         raise FileExistsError(f"Refusing to overwrite: {target}")
     # Reject redirected parent directories, even if the final target is absent.
