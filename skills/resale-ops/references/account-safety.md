@@ -31,7 +31,7 @@ For admitted automation, verify the actual URL before every input/upload and aft
 
 Use a dedicated task profile and a pinned, reviewed browser-tool version. Never connect the user’s entire personal browser, export cookies/storage state, inspect unrelated tabs/messages/payments/security settings, or request broad filesystem access. Isolation reduces exposed data; it neither grants platform permission nor prevents bans.
 
-Never request passwords, SMS/2FA or recovery codes, or OAuth tokens in chat. Secrets belong only in the official least-privilege connection UI; do not substitute session cookies for supported authorization. Avoid HAR/network dumps, traces/videos, or account screenshots unless separately necessary and consented to. Keep work files and logs outside public repositories; `.gitignore` is not leak protection.
+Never request passwords, SMS/2FA or recovery codes, or OAuth tokens in chat. Secrets belong only in the official least-privilege connection UI; do not substitute session cookies for supported authorization. Avoid HAR/network dumps, traces/videos, or account screenshots unless separately necessary and consented to. Keep work files and logs local and outside public repositories; `.gitignore` is not leak protection.
 
 On CAPTCHA, 401/403/429, account restriction, verification demand, or blocking redirect, stop all access to that platform. Do not switch tool, IP, proxy, transport, or account. Manual challenge completion does not grant new automation permission; resume only an already admitted method after owner confirmation.
 

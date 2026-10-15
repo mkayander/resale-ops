@@ -12,7 +12,7 @@ Do not export storage state/cookies, expose remote debugging to a network, or re
 
 `permission → origin/account/item → inspect → fill/upload → inspect → compare → stop`
 
-1. Verify exact HTTPS hostname, intended account and item, and no existing listing/duplicate. Reject shorteners and “seller verification” links from listings.
+1. Verify exact HTTPS hostname, owner-agreed account and item, and no existing listing/duplicate. Reject shorteners and “seller verification” links from listings.
 2. Confirm a new form or unpublished draft. If it is live or status is unknown, stop before input because autosave may alter public fields.
 3. Match visible labels and values. Take a fresh snapshot after navigation or category changes. Never use stale coordinates, hidden APIs, or blind selectors.
 4. Recheck origin before every input/upload. Upload only selected, inspected, metadata-sanitized copies. Verify count, order, cover photo, and errors.

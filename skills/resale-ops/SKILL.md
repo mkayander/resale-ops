@@ -10,7 +10,7 @@ Requires image understanding. Prepare materials for manual posting by default. T
 
 Before any marketplace access, read [account safety](references/account-safety.md) and the [platform registry](references/platforms.md). Browser availability, low volume, and owner consent do not establish platform permission. If an access method is not explicitly admitted, use `prepare_only`.
 
-Reply in the language the user starts with, unless they explicitly request another; default to Russian only when their language is unclear. Lack of marketplace access must not delay useful local output.
+Use the language the user starts the conversation with for all user-facing output, overridden by any explicit language request; default to Russian only when the starting language is unclear. Lack of marketplace access must not delay useful local output.
 
 ## Hard boundaries
 
@@ -36,7 +36,7 @@ If `ru-marketplace-mcp` is configured, read its [integration status](references/
 
 ### 2. Identify the item
 
-Separate facts into `visible_in_photo`, `owner_reported`, and `inferred`. State confidence and alternatives. Exact model, size, storage, and material require readable markings or owner confirmation. Ask before pricing when ambiguity is material. Appearance cannot prove operation, authenticity, warranty, or repair history.
+Separate facts into `visible_in_photo`, `owner_reported`, and `inferred`. State confidence and alternatives. Exact model, size, storage, and material require readable markings or owner confirmation. If ambiguity materially affects price, ask before giving an exact valuation; a clearly qualified preliminary range is still allowed. Appearance cannot prove operation, authenticity, warranty, or repair history.
 
 ### 3. Research and price
 
@@ -61,7 +61,7 @@ Use the [result schema](references/output.md). Show unknown fields and photo ord
 
 This section does not authorize Avito or Youla automation in this release. First satisfy the registry and account-safety admission criteria; for browser adapters also follow the [browser protocol](references/browser.md).
 
-Verify exact HTTPS hostname and intended account without exposing personal data. Open only a new form or confirmed unpublished draft for this item. Stop before input if the page is a live listing or status is unclear: autosave may alter public data. Editing a live listing requires a separate request and agreed final changes.
+Verify exact HTTPS hostname and the owner-agreed account without exposing personal data. Open only a new form or confirmed unpublished draft for this item. Stop before input if the page is a live listing or status is unclear: autosave may alter public data. Editing a live listing requires a separate request and agreed final changes.
 
 Work sequentially. Refresh the snapshot after navigation or category changes. Upload only selected, inspected files; verify count, order, and errors. Do not use hidden APIs, blind selectors, or Enter to submit. Before each Next/Save/Import action, determine whether it publishes, submits for moderation, spends quota, or charges money.
 

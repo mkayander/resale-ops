@@ -1,6 +1,6 @@
 # Behavior examples
 
-All examples are synthetic, not current listings. Respond in the user’s language.
+All examples are synthetic, not current listings. Use the conversation language selected by `SKILL.md`.
 
 ## Normal request
 
