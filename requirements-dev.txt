@@ -1,0 +1,2 @@
+# Package validation only; the installer has no third-party dependencies.
+PyYAML==6.0.3
