@@ -4,7 +4,7 @@
 
 Перед каждым релизом проверьте отсутствие личных фото, контактов, точных адресов, сессий браузера и реальных черновиков. Не добавляйте рабочий каталог продажи в репозиторий. Проверьте состав отслеживаемых файлов: `.gitignore` не исключает уже отслеживаемые данные.
 
-Версию в `package.json`, `plugin.json`, `.claude-plugin/plugin.json` и README обновляет [semantic-release](https://semantic-release.gitbook.io/) в workflow [Release](../.github/workflows/release.yml) после merge в `main`. Коммиты в `main` должны следовать [Conventional Commits](https://www.conventionalcommits.org/): `feat:` — minor, `fix:` — patch, `BREAKING CHANGE:` или `feat!:` / `fix!:` — major; `chore:`, `docs:`, `ci:` и прочие типы по умолчанию релиз не создают.
+Версию в `package.json`, `plugin.json` и `.claude-plugin/plugin.json` обновляет [semantic-release](https://semantic-release.gitbook.io/) в workflow [Release](../.github/workflows/release.yml) после merge в `main`. Коммиты в `main` должны следовать [Conventional Commits](https://www.conventionalcommits.org/): `feat:` — minor, `fix:` — patch, `BREAKING CHANGE:` или `feat!:` / `fix!:` — major; `chore:`, `docs:`, `ci:` и прочие типы по умолчанию релиз не создают.
 
 Перед релизом выполните проверки из [TESTING.md](TESTING.md). Результаты ручной приёмки фиксируйте отдельно от автоматических тестов; не объявляйте невыполненные проверки успешными. Для MCP действует [ограничение проверенной ревизии](RU-MARKETPLACE-MCP.md), пока не выполнены критерии возобновления.
 

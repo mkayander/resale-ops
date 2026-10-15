@@ -24,11 +24,6 @@ module.exports = {
             from: '"version": "[0-9]+\\.[0-9]+\\.[0-9]+"',
             to: '"version": "${nextRelease.version}"',
           },
-          {
-            files: ['README.md'],
-            from: 'Версия [0-9]+\\.[0-9]+\\.[0-9]+\\.',
-            to: 'Версия ${nextRelease.version}.',
-          },
         ],
       },
     ],
@@ -47,7 +42,6 @@ module.exports = {
           'pnpm-lock.yaml',
           'plugin.json',
           '.claude-plugin/plugin.json',
-          'README.md',
         ],
         message:
           'chore(release): ${nextRelease.version} [skip ci]\n\n${nextRelease.notes}',

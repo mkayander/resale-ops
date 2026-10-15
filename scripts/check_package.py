@@ -121,8 +121,6 @@ def check(root=ROOT):
             "Invalid package.json version",
         )
         require(package["version"] == portable["version"], "package.json version differs from plugin.json")
-    readme = (root / "README.md").read_text(encoding="utf-8")
-    require(f"Версия {portable['version']}." in readme, "README version differs")
     for relative in ("mcp.json", ".mcp.json", ".cursor/mcp.json", ".claude/settings.json", ".codex/config.toml"):
         require(not (root / relative).exists(), f"Unexpected automatic client configuration: {relative}")
     # An "inspection" label cannot restrict the tools exposed by a full server.
