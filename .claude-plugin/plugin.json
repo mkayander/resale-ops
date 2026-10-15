@@ -1,6 +1,6 @@
 {
   "name": "resale-ops",
   "version": "0.4.0",
-  "description": "Подготовка продажи б/у вещей для ручного размещения. Автоматизация только через проверенный разрешённый площадкой способ.",
+  "description": "Prepare used-item listings for manual posting. Automate only through a separately verified marketplace-authorized method.",
   "license": "MIT"
 }

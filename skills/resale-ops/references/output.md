@@ -1,17 +1,17 @@
-# Карточка результата
+# Result schema
 
-- Предмет и уверенность распознавания.
-- Подтверждено фото / владельцем / ещё неизвестно.
-- Состояние, дефекты, комплект, город, передача.
-- Для каждой площадки: режим доступа и известные существующие объявления/черновики этой вещи. Если статус неизвестен, отметь это; новый экземпляр не создаётся.
-- Аналоги: для каждого прямая ссылка, время и источник проверки (user_provided/user_verified/agent_verified), цена, характеристики, доступность, включение и причина. Не выдумывай карточки или даты для заполнения шаблона.
-- Выборка и расчёт: n, медиана, диапазон, исключения, поправки, ограничения.
-- Для будущего допущенного интеграционного метода: источник/версия, предупреждения, неполнота, кэш/его возраст, проверка прямой карточки. Текущий ru-marketplace-mcp не используется. Цена нового товара показывается отдельно от б/у выборки.
-- Рыночный ориентир; цена быстрой продажи; выбранная цена объявления.
-- Заголовок; описание; категория и характеристики.
-- Фото: выбранные имена/порядок, видимые личные данные, статус проверки метаданных и подготовленных копий. Не утверждай, что EXIF удалён без проверки.
-- Аккаунт: в prepare_only — «не открывался и не изменялся». Для разрешённого метода — наблюдаемые поля/ошибки и доказательство сохранения без персональных данных.
-- Статус: prepared/form_filled/draft_saved/blocked/submitted/published, с источником доказательства. В ручном режиме агент выдаёт prepared; последующий статус со слов владельца так и обозначается.
-- Следующий шаг и явная остановка перед публикацией.
+Present compactly in the conversation language selected by `SKILL.md`:
 
-Не включай точный адрес/телефон, cookies, токены или содержимое других вкладок. Храни личные рабочие файлы вне публичного репозитория.
+1. **Item** — identification and confidence; separate photo evidence, owner report, inference, and unknowns.
+2. **Condition** — defects, bundle, city, and handoff method.
+3. **Platforms** — access mode and known active/pending/rejected/archived/draft records per platform. If status is unknown, say so and create nothing.
+4. **Comparables** — direct URL, check time and evidence label (`user_provided | user_verified | agent_verified`), price, relevant attributes, availability, inclusion decision, and reason. Never invent cards or timestamps to fill the schema.
+5. **Calculation** — `n`, median, range, exclusions, adjustments, and limitations. For any future admitted integration include source/version, warnings, incompleteness, cache age, and direct-card verification. Do not use current `ru-marketplace-mcp`. Keep new-item prices outside the used sample.
+6. **Prices** — market reference, quick-sale price, and selected listing price.
+7. **Listing package per platform** — title, description, candidate category, attributes, price, terms, and unresolved fields.
+8. **Photos** — real selected filenames/order, visible personal data, metadata-inspection status, and prepared-copy status. Never claim EXIF removal without verification.
+9. **Account** — in `prepare_only`, state in the selected conversation language that it was not opened or changed. For admitted methods, report observed fields/errors and save evidence without personal data.
+10. **Status** — `prepared | form_filled | draft_saved | blocked | submitted | published`, with evidence source. Manual work ends at `prepared`; label later owner-reported status as such.
+11. **Next step** — make the stop before publication explicit.
+
+Exclude exact address/phone, cookies, tokens, and unrelated-tab content. Keep personal work files local and outside public repositories.
