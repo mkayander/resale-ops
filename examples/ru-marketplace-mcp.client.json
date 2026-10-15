@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "resale-market-research": {
+      "command": "uv",
+      "args": ["run", "--directory", "/ABSOLUTE/PATH/TO/ru-marketplace-mcp", "--frozen", "compare-mcp"],
+      "env": {
+        "MARKETPLACE_SOURCES": "yandex_market"
+      }
+    }
+  }
+}

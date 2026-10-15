@@ -26,6 +26,13 @@ def check(root=ROOT):
     assert portable["name"] == claude["name"]
     assert portable["version"] == claude["version"]
     assert not (root / "mcp.json").exists(), "Unexpected automatic MCP wiring"
+    research = json.loads((root / "examples/ru-marketplace-mcp.client.json").read_text(encoding="utf-8"))
+    servers = research["mcpServers"]
+    assert set(servers) == {"resale-market-research"}, "Unexpected server in research profile"
+    server = servers["resale-market-research"]
+    assert server["command"] == "uv"
+    assert server["args"][-1] == "compare-mcp" and "--frozen" in server["args"]
+    assert server["env"] == {"MARKETPLACE_SOURCES": "yandex_market"}, "Research profile must not enable all sources or CDP"
     print("PASS: frontmatter, references, manifests and package boundaries")
 
 if __name__ == "__main__":
