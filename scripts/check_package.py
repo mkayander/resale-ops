@@ -117,13 +117,13 @@ def check(root=ROOT):
     require(f"Версия {portable['version']}." in readme, "README version differs")
     for relative in ("mcp.json", ".mcp.json", ".cursor/mcp.json", ".claude/settings.json", ".codex/config.toml"):
         require(not (root / relative).exists(), f"Unexpected automatic client configuration: {relative}")
-    profile = json.loads((root / "examples/ru-marketplace-mcp.inspection.client.json").read_text(encoding="utf-8"))
-    expected = {"mcpServers": {"resale-market-inspection": {
-        "command": "uv",
-        "args": ["run", "--directory", "/ABSOLUTE/PATH/TO/ru-marketplace-mcp", "--frozen", "--no-sync", "compare-mcp"],
-        "env": {"MARKETPLACE_SOURCES": "yandex_market"},
-    }}}
-    require(profile == expected, "Unexpected inspection profile; review source/tool restrictions")
+    # An "inspection" label cannot restrict the tools exposed by a full server.
+    # Do not distribute runnable client profiles until an adapter is admitted.
+    for folder in (root / "examples", skill, root / "docs"):
+        for path in folder.rglob("*.json"):
+            data = json.loads(path.read_text(encoding="utf-8"))
+            require(not isinstance(data, dict) or "mcpServers" not in data,
+                    f"Runnable MCP client profile requires security review: {path}")
     print("PASS: metadata, documentation links, licenses, manifests and package boundaries")
 
 

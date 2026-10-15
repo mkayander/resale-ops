@@ -72,13 +72,18 @@ class PackageTest(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "automatic client configuration"):
             self.validate()
 
-    def test_expanding_inspection_sources_is_rejected(self):
-        path = self.root / "examples/ru-marketplace-mcp.inspection.client.json"
-        profile = json.loads(path.read_text(encoding="utf-8"))
-        profile["mcpServers"]["resale-market-inspection"]["env"]["MARKETPLACE_SOURCES"] = ""
-        path.write_text(json.dumps(profile), encoding="utf-8")
-        with self.assertRaisesRegex(ValueError, "inspection profile"):
-            self.validate()
+    def test_runnable_profiles_are_rejected_even_if_named_inspection(self):
+        for folder in ("examples", "skills/resale-ops", "docs"):
+            with self.subTest(folder=folder):
+                path = self.root / folder / "inspection.client.json"
+                path.parent.mkdir(parents=True, exist_ok=True)
+                path.write_text(json.dumps({"mcpServers": {"inspection": {
+                    "command": "uv", "args": ["run", "compare-mcp"],
+                    "env": {"MARKETPLACE_SOURCES": "yandex_market"},
+                }}}), encoding="utf-8")
+                with self.assertRaisesRegex(ValueError, "Runnable MCP client profile"):
+                    self.validate()
+                path.unlink()
 
     def test_optimized_python_cannot_disable_validation(self):
         (self.root / ".mcp.json").write_text("{}", encoding="utf-8")
