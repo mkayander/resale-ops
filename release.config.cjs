@@ -44,7 +44,7 @@ module.exports = {
       {
         assets: [
           'package.json',
-          'package-lock.json',
+          'pnpm-lock.yaml',
           'plugin.json',
           '.claude-plugin/plugin.json',
           'README.md',

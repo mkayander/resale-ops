@@ -11,8 +11,9 @@
 После успешного semantic-release появляются тег `vX.Y.Z`, GitHub Release с заметками и ZIP `resale-ops-X.Y.Z.zip` из `git archive`. Локальная проверка без публикации:
 
 ```sh
-npm ci
-npx semantic-release --dry-run
+corepack enable
+pnpm install --frozen-lockfile
+pnpm exec semantic-release --dry-run
 ```
 
 Ручной архив при необходимости:
