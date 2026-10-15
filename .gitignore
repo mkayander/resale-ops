@@ -10,3 +10,5 @@ drafts/
 browser-profile/
 storage-state*.json
 *.log
+node_modules/
+resale-ops-*.zip

@@ -1,0 +1,21 @@
+{
+  "name": "resale-ops",
+  "private": true,
+  "version": "0.4.0",
+  "description": "Release tooling for the resale-ops Agent Skill / Agent Plugins package",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/mkayander/resale-ops.git"
+  },
+  "scripts": {
+    "semantic-release": "semantic-release"
+  },
+  "devDependencies": {
+    "@semantic-release/exec": "^7.1.0",
+    "@semantic-release/git": "^10.0.1",
+    "@semantic-release/github": "^11.0.6",
+    "semantic-release": "^24.2.9",
+    "semantic-release-replace-plugin": "^1.2.7"
+  }
+}
