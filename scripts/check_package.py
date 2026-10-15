@@ -6,7 +6,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 
 def check(root=ROOT):
-    skill = root / "skills/avito-seller"
+    skill = root / "skills/marketplace-listing"
     text = (skill / "SKILL.md").read_text(encoding="utf-8")
     assert text.startswith("---\n"), "Missing frontmatter"
     front, body = text[4:].split("\n---\n", 1)
