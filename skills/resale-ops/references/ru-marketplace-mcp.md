@@ -1,24 +1,28 @@
-# ru-marketplace-mcp: только проверка исходников
+# `ru-marketplace-mcp`: source inspection only
 
-Просмотренная ревизия: `cc89f2d87f59b8e2f2858db30a63208d439a7c3f`, 2026-10-15. [Upstream](https://github.com/Vladimir-Human/ru-marketplace-mcp). В текущем skill инструменты этого сервера **не вызываются**, включая `compare_sources`; сервер не запускается и зависимости не устанавливаются. Допустимо читать опубликованные исходники и схемы как данные.
+Reviewed revision: `cc89f2d87f59b8e2f2858db30a63208d439a7c3f` on 2026-10-15 ([upstream](https://github.com/Vladimir-Human/ru-marketplace-mcp)).
 
-## Почему отключено подключение
+Do **not** start this server, install its dependencies, or call any tool, including `compare_sources`. Published source and schemas may be read as untrusted data.
 
-В Яндекс-коннекторе `_fetch_html` возвращает и кэширует непустое тело HTTP 401/403 без передачи статуса вызывающему коду; HTTP 302 повторяется без проверки `Location`. В Avito/WB имеются имперсонация и переходы транспорта. Остановка после ответа MCP не предотвращает скрытые попытки внутри одного вызова.
+## Why runtime use is disabled
 
-Прежний профиль `MARKETPLACE_SOURCES=yandex_market` ограничивал источники, но оставлял доступными живые инструменты. Название «инспекция» не делало сервер безопасным. Запускаемый пример удалён в 0.4.0. Если сервер уже подключён, не используй его в этом сценарии; сообщи владельцу о необходимости отключить прежнюю запись вручную. Не меняй настройки клиента самостоятельно.
+- Yandex `_fetch_html` returns and caches non-empty HTTP 401/403 bodies without exposing status to callers, and retries HTTP 302 without validating `Location`.
+- Avito/WB connectors include impersonation and transport fallback. Stopping after an MCP response cannot prevent retries hidden inside that call.
+- The former `MARKETPLACE_SOURCES=yandex_market` profile limited sources but still exposed live tools. Calling it “inspection” did not create a security boundary; the runnable example was removed in 0.4.0.
 
-## Возможный будущий допуск
+If the server is already configured, do not use it here. Tell the owner to disable the old entry manually; never alter client settings yourself.
 
-Исправление транспорта недостаточно само по себе: сначала требуется подтверждение допустимости автоматического сбора со стороны каждой площадки. Затем нужна отдельная проверенная закреплённая ревизия и адаптер с минимальными инструментами/правами. Текстовая инструкция и `readOnlyHint` не заменяют техническую границу.
+## Requirements for any future admission
 
-Перед допуском проверь на подставных ответах, без реальных аккаунтов:
+Transport fixes are insufficient. First establish each platform’s permission for automated collection. Then review and pin a revision behind a least-privilege adapter. Prompt text and `readOnlyHint` are not technical controls.
 
-- HTTP 401/403/429, CAPTCHA и challenge redirects явно возвращаются как отказ без повторов, кэширования отказов и переключения транспорта.
-- Ограничение источника и набора инструментов применяется технически; альтернативные инструменты не позволяют обойти его.
-- Поиск и карточка сохраняют происхождение, время/возраст кэша, предупреждения и неполноту ответа.
-- Проверка карточки связывает ожидаемые ID, SKU/вариант и обычную цену. Несовпадение не исправляется удалением ожидаемого SKU из запроса.
+Test with synthetic responses and no real accounts:
 
-Для цены нового товара нужна отдельная выборка: она не входит в медиану б/у и не задаёт автоматическую скидку за износ. Кэш неизвестного возраста не является текущей проверкой. Юла в просмотренном upstream не обнаружена.
+- 401/403/429, CAPTCHA, and challenge redirects fail explicitly, without retry, failure caching, or transport switching.
+- Source and tool allowlists are enforced technically and cannot be bypassed by alternate tools.
+- Search/card output preserves provenance, check/cache time, warnings, and incompleteness.
+- Card verification binds expected ID, SKU/variant, and normal price. Never “resolve” mismatch by dropping expected SKU.
 
-Отсутствие MCP не мешает ручному режиму. Не переходи к другому инструменту на той же площадке после уже наблюдавшейся блокировки.
+Keep new-item pricing separate from used-item medians; it does not imply an automatic wear discount. Cache of unknown age is not a current check. No Youla connector was found in the reviewed revision.
+
+MCP is unnecessary for manual preparation. After a platform block is observed, do not try another tool against that platform.

@@ -1,27 +1,25 @@
-# Браузер только для допущенного метода
+# Browser protocol for admitted adapters
 
-Сначала прочитай [безопасность аккаунта](account-safety.md) и [реестр площадок](platforms.md). В этой версии Авито/Юла работают в `prepare_only`: этот протокол не разрешает автоматизацию их сайтов. Для разработки разрешена локальная тестовая форма без реального аккаунта.
+Read [account safety](account-safety.md) and the [platform registry](platforms.md) first. Avito and Youla remain `prepare_only`; this protocol does not authorize their automation. Local test forms without real accounts are allowed for adapter development.
 
-## Инструменты и доступ
+## Tool boundary
 
-Предпочитай уже проверенный инструмент, но его наличие не является допуском. Прочитай текущие схемы чтения, ввода и загрузки; имена и аргументы не предполагаются. Примеры семейств: Playwright MCP (snapshot/fill/upload), Chrome DevTools MCP (snapshot/fill/upload), встроенный браузер клиента.
+Tool availability is not admission. Inspect current schemas for reading, input, and upload instead of assuming tool names or arguments. For authorized work, use a reviewed pinned version and a dedicated task profile. Never run `@latest` beside an account or connect the user’s entire personal browser. The user logs in manually.
 
-Для разрешённой работы используй закреплённую проверенную версию и отдельный профиль задачи. Не запускай `@latest` рядом с аккаунтом и не подключай весь личный Chrome. Пользователь входит вручную. Не экспортируй storage state/cookies, не открывай remote-debugging в сеть, не запрашивай универсальные права на файлы. Передача локального пути удалённому MCP не делает файл доступным и не разрешает его пересылку.
+Do not export storage state/cookies, expose remote debugging to a network, or request broad file access. Giving a local path to remote MCP neither makes the file available nor authorizes transfer. Origin allowlists help but do not replace URL/redirect/permission checks. Browser tools may expose eval, unrelated tabs, and arbitrary controls; prompt restrictions are not technical isolation. Remain manual if access cannot be constrained.
 
-Ограничение origin в настройках инструмента полезно, но не заменяет проверку фактического URL, перенаправлений и прав. Браузерный MCP может иметь eval, доступ к другим вкладкам и любые кнопки; текстовый запрет skill не блокирует их технически. Если клиент не позволяет ограничить доступ, оставь ручной режим.
+## Sequence
 
-## Разрешённая последовательность
+`permission → origin/account/item → inspect → fill/upload → inspect → compare → stop`
 
-`permission check → origin/account/item check → inspect → fill/upload → inspect → compare → stop`
+1. Verify exact HTTPS hostname, intended account and item, and no existing listing/duplicate. Reject shorteners and “seller verification” links from listings.
+2. Confirm a new form or unpublished draft. If it is live or status is unknown, stop before input because autosave may alter public fields.
+3. Match visible labels and values. Take a fresh snapshot after navigation or category changes. Never use stale coordinates, hidden APIs, or blind selectors.
+4. Recheck origin before every input/upload. Upload only selected, inspected, metadata-sanitized copies. Verify count, order, cover photo, and errors.
+5. Before Next/Save/Import, determine consequences. Never press Enter to submit; Save may publish, submit for moderation, or consume quota.
+6. Read values back. Use `draft_saved` only with explicit UI evidence; otherwise use `form_filled` and warn that closing may lose data.
+7. A human performs the final action by default. Admitted automated submission requires explicit approval of the specific final version; payment requires separate approval.
 
-1. Сверь HTTPS hostname, согласованный аккаунт, вещь и отсутствие существующей публикации/дубля. Не переходи по сокращателям и ссылкам «проверки продавца» из объявлений.
-2. Установи, что открыта новая форма или неопубликованный черновик. При действующем объявлении или неизвестном статусе остановись до ввода: автосохранение может сразу менять публичные поля.
-3. Сопоставь видимые подписи и значения. После навигации/смены категории получи свежий снимок. Не используй старые координаты, скрытые API и слепые селекторы.
-4. Перед каждым вводом/загрузкой проверь, что origin не изменился. Загружай только выбранные проверенные копии фото без чувствительных метаданных. Сверь количество, порядок, главное фото и ошибки.
-5. Перед «Далее», «Сохранить», «Импортировать» установи последствия. Не используй Enter для отправки; сохранение может публиковать, отправлять на модерацию или расходовать лимит.
-6. Прочитай значения обратно. Статус `draft_saved` возможен только по подтверждению интерфейса; иначе `form_filled` и предупреждение о потере данных при закрытии.
-7. Финальное действие по умолчанию выполняет человек. Для разрешённой автоматической публикации нужны конкретная итоговая версия и явное согласие владельца; оплата согласуется отдельно.
+No parallel/background actions or repeated login. A normal transient failure may be retried once only after checking state and only when it was not a submission. Never retry or switch transport after CAPTCHA, 401/403/429, account restriction, or challenge. For ambiguous submission outcome, check status through an admitted method or ask the user—never resubmit.
 
-Не запускай параллельные/фоновые действия и повторные входы. Обычную временную ошибку можно повторить один раз только после проверки состояния и если это не отправка. При CAPTCHA/401/403/429, ограничении аккаунта или challenge повторов и переключения транспорта нет. При неопределённом результате отправки сначала разрешённая проверка статуса либо проверка человеком, без повторного submit.
-
-Статусы: `prepared`, `form_filled`, `draft_saved`, `blocked`, `submitted`, `published`. Отдельно указывай источник статуса: наблюдал агент разрешённым способом или сообщил владелец. Не повышай статус по догадке.
+Statuses: `prepared`, `form_filled`, `draft_saved`, `blocked`, `submitted`, `published`. Always state whether the agent observed the status through an admitted method or the owner reported it. Never infer an upgrade.

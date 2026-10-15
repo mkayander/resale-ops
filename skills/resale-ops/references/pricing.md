@@ -1,12 +1,20 @@
-# Проверяемая оценка
+# Evidence-based pricing
 
-Выбор источника подчиняется [допуску площадки](platforms.md). В текущем ручном режиме карточки проверяет пользователь, агент обрабатывает переданные данные. Не открывай площадку ради выполнения этой методики без допущенного способа чтения.
+Source access is governed by the [platform registry](platforms.md). In manual mode, the user checks listing cards and the agent analyzes supplied data. Do not open a marketplace to apply this method without an admitted read adapter.
 
-1. Строй запрос из подтверждённых бренда/модели/варианта; начни с города пользователя. Зафиксируй дату, регион и запросы. Если расширяешь регион, объясни транспортные различия.
-2. Для каждой карточки запиши прямой URL, checked_at (ISO 8601 с часовым поясом, только если время известно), цену в RUB, модель/вариант, состояние, комплект, город, статус available/removed/unknown, доказательство и included: true/false с причиной. Укажи источник проверки: user_provided, user_verified или agent_verified. Ссылка/сниппет сами по себе не подтверждают карточку. Для user_verified нужны подтверждённые владельцем текущие цена, доступность, характеристики и время; его проверку не называй своей. Не сохраняй имена, телефоны и полный текст чужих объявлений.
-3. Отдели частные б/у вещи от новых, ремонта, запчастей, аренды, обмена, оптовых цен и магазинов. Удали дубли одного предмета по ID/фото/продавцу; не обходи аккаунт для этого. Исключай выбросы по содержанию, а не ради желаемой цены. Не учитывай нулевые цены и «от» как цену предмета.
-4. На подтверждённой однородной выборке посчитай медиану цен предложения. Включай только доступные карточки с известным временем и достаточными данными; user_provided без подтверждения исключи из текущего расчёта. Если проверку сделал владелец, так и подпиши оценку. При нулевой выборке медианы и текущей рыночной цены нет. Покажи диапазон и число включённых карточек. При 5+ наблюдениях допустим межквартильный диапазон с указанием метода; при меньшем числе — min/max и низкая уверенность. Не выдавай ложную статистическую точность.
-5. Рыночный ориентир — округлённая медиана сопоставимых цен предложения. Корректировки за комплект/дефекты обосновывай конкретными аналогами; без них это явно помеченная экспертная поправка.
-6. Для быстрой продажи выбери нижнюю часть сопоставимого диапазона. Если нужна скидка, можно предложить 10–20% от ориентира как рабочую гипотезу, не эмпирически доказанный срок продажи. Укажи итоговую цифру и основание. При слабой выборке предложи пробную цену и пересмотр по откликам.
+1. Build queries from confirmed brand/model/variant, starting in the user’s city. Record date, region, and query. Explain shipping-market differences before widening geography.
+2. For each comparable record:
+   - direct URL;
+   - `checked_at` as ISO 8601 with timezone, only when known;
+   - RUB asking price, model/variant, condition, bundle, city;
+   - `available | removed | unknown`;
+   - `user_provided | user_verified | agent_verified` plus evidence;
+   - `included: true | false` and reason.
 
-Не утверждай, что товар продан по цене объявления. Дата проверки не является датой публикации. Архивные/непроверенные источники перечисляй отдельно. Перед размещением в другой день попроси владельца перепроверить доступность и цены; автоматическая перепроверка возможна только допущенным методом. При блокировке отметь устаревание, не запускай повторный доступ.
+   A URL or snippet alone is not verification. `user_verified` requires owner-confirmed current price, availability, attributes, and check time; never call it the agent’s check. Do not retain seller names, phone numbers, or full copied descriptions.
+3. Separate private used goods from new goods, repair services, parts, rentals, swaps, wholesale prices, and stores. Deduplicate the same item by ID/photo/seller without evading account controls. Exclude outliers for stated comparability reasons, never to force a desired price. Exclude zero and “from” prices.
+4. Compute the median asking price only from a verified homogeneous sample: available cards with known check time and sufficient attributes. Exclude unverified `user_provided` data. Attribute owner-verified research to the owner. With zero qualifying observations, there is no current median or current market price. Report `n` and range. For `n >= 5`, an explicitly described IQR is acceptable; below five, use min/max and low confidence. Avoid false precision.
+5. Market reference = rounded median comparable asking price. Ground bundle/defect adjustments in specific comparables or label them explicitly as expert judgment.
+6. Quick-sale price = lower part of the comparable range. A 10–20% reduction may be offered as a working hypothesis, not an empirically proven sale-time guarantee. State the final number and basis. With weak evidence, propose a trial price and response-based review.
+
+Never claim an item sold at its asking price. Check time is not publication time. List archived/unverified sources separately. If posting on another day, ask the owner to recheck availability and prices; only an admitted adapter may automate rechecking. After a block, mark evidence stale and do not retry access.
