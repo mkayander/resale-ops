@@ -58,6 +58,13 @@ class PackageTest(unittest.TestCase):
         with self.assertRaises(OSError):
             self.validate()
 
+    def test_package_json_version_must_match_manifest(self):
+        path = self.root / "package.json"
+        original = json.loads(path.read_text(encoding="utf-8"))
+        path.write_text(json.dumps({**original, "version": "9.9.9"}), encoding="utf-8")
+        with self.assertRaisesRegex(ValueError, "package.json version differs"):
+            self.validate()
+
     def test_invalid_manifests_are_rejected(self):
         path = self.root / "plugin.json"
         original = json.loads(path.read_text(encoding="utf-8"))

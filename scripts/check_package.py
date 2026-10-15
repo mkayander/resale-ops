@@ -113,8 +113,14 @@ def check(root=ROOT):
     check_manifest(portable, portable=True)
     check_manifest(claude, portable=False)
     require(portable["version"] == claude["version"], "Manifest versions differ")
-    readme = (root / "README.md").read_text(encoding="utf-8")
-    require(f"Версия {portable['version']}." in readme, "README version differs")
+    package_json = root / "package.json"
+    if package_json.is_file():
+        package = json.loads(package_json.read_text(encoding="utf-8"))
+        require(
+            isinstance(package.get("version"), str) and VERSION.fullmatch(package["version"]),
+            "Invalid package.json version",
+        )
+        require(package["version"] == portable["version"], "package.json version differs from plugin.json")
     for relative in ("mcp.json", ".mcp.json", ".cursor/mcp.json", ".claude/settings.json", ".codex/config.toml"):
         require(not (root / relative).exists(), f"Unexpected automatic client configuration: {relative}")
     # An "inspection" label cannot restrict the tools exposed by a full server.
