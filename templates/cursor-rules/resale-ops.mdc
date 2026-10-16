@@ -1,29 +1,41 @@
 ---
-description: Resale queue — load saved Drive/Sheets IDs and run resale-ops without re-setup
+description: Resale-ops cloud queue — IDs in rules, no local disk required
 globs:
 alwaysApply: false
 ---
 
-# resale-ops locations
+# resale-ops (cloud)
 
-Before resale work, load owner locations (first hit wins):
+Follow the **resale-ops** skill. Load locations from this rule first; if Drive MCP is connected, also read `Resale/.resale-locations.json` (must match).
 
-1. `RESALE_LOCATIONS` env path
-2. `./resale-locations.json`
-3. `~/.config/resale-ops/locations.json`
-4. Google Drive MCP: read `Resale/.resale-locations.json`
+## resale-locations
 
-Then follow the **resale-ops** skill (`skills/resale-ops/SKILL.md`).
-
-## Owner IDs (replace once or use resale-locations.json)
-
-- Drive `Resale` folder ID: `REPLACE_ME`
-- Drive `queue` folder ID: `REPLACE_ME`
-- Spreadsheet ID: `REPLACE_ME`
-- Sheet tab: `Queue`
+```json
+{
+  "version": 1,
+  "drive": {
+    "resale_folder_id": "REPLACE",
+    "queue_folder_id": "REPLACE",
+    "resale_folder_url": "REPLACE",
+    "queue_folder_url": "REPLACE"
+  },
+  "sheets": {
+    "spreadsheet_id": "REPLACE",
+    "queue_tab": "Queue",
+    "spreadsheet_url": "REPLACE"
+  },
+  "defaults": {
+    "city": "REPLACE",
+    "platforms": ["avito", "youla"],
+    "language": ""
+  }
+}
+```
 
 ## Routine
 
-- New item: folder under `queue/<item-id>/` with `inbox/`, then `prepare-photos` → `photos/post/`
-- Persist copy in `listing.md` + `meta.json`; update Queue sheet row
-- No marketplace login or auto-publish unless owner explicitly requests and an admitted adapter exists
+- Phone uploads → `queue/<item-id>/inbox/` in cloud
+- Sanitize → `photos/post/` via temp workspace + prepare script or equivalent
+- Persist `listing.md`, `meta.json`, Queue sheet row via MCP
+- Never ask for folder/spreadsheet IDs again unless the block above is empty
+- No marketplace login or auto-publish in prepare_only

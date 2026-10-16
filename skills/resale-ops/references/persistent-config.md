@@ -1,49 +1,42 @@
-# Persistent config (folder IDs, sheet ID, defaults)
+# One-time setup (no local disk required)
 
-Goal: **one-time setup**, then any chat can say “use resale-ops, new item from inbox” without re-pasting Drive/Sheets links.
+Goal: paste IDs **once** into the host’s project memory / rules (or a cloud JSON file), then use resale-ops from any device by uploading photos to cloud `inbox/`.
 
-## 1. Canonical file (recommended)
+## Recommended: project instructions / rules (ChatGPT, Cursor, Claude)
 
-From a [resale-ops](https://github.com/mkayander/resale-ops) checkout, copy `resale-locations.example.json` to:
+Copy the block below into:
 
-- **`resale-locations.json`** in your project (gitignored), or
-- **`~/.config/resale-ops/locations.json`** (works in any project)
+| Host | Where |
+|------|--------|
+| **ChatGPT** | Project → Instructions (and optionally attach the same JSON as a project file) |
+| **Cursor** | Project rules (e.g. `.cursor/rules/resale-ops.mdc`) or **User rules** for all chats |
+| **Claude** | Project instructions or root `CLAUDE.md` |
+| **Codex** | `AGENTS.md` in the sales project |
 
-Optional: `export RESALE_LOCATIONS="/absolute/path/to/locations.json"`
+Use [project-memory-snippet.md](project-memory-snippet.md) as a fill-in template.
 
-The agent resolves paths per [locations.md](locations.md).
+Add one line of behavior:
 
-### Drive copy (fresh chats + phone)
+> When I mention resale or selling an item, follow the **resale-ops** skill. Load `resale-locations` from these instructions (or Drive `Resale/.resale-locations.json` if MCP is connected). Do not ask for folder IDs again unless missing.
 
-Upload the same JSON as **`Resale/.resale-locations.json`**. With Google Drive MCP, the agent reads it even when no local file exists.
+## Also store in cloud (phone + fresh chats)
 
-## 2. Cursor
+Upload the **same JSON** as `Resale/.resale-locations.json` in your cloud folder. Agents with **Google Drive MCP** read it even when project rules are empty.
 
-- **Project rules:** copy `templates/cursor-rules/resale-ops.mdc` from the repo into `.cursor/rules/` and replace `REPLACE_ME` or point to `resale-locations.json`.
-- **User rules (global):** “For resale, load `~/.config/resale-ops/locations.json` and follow resale-ops.”
-- **Cloud agents:** commit `resale-locations.json` to a **private** repo or set `RESALE_LOCATIONS` in the environment.
+No desktop sync required. The owner uploads photos with the **Drive mobile app** (or equivalent) into `queue/<item-id>/inbox/`.
 
-## 3. ChatGPT
+## Optional: local checkout (developers only)
 
-- **Project instructions:** paste filled `resale-locations.json` + “Follow resale-ops.”
-- **Project knowledge / files:** attach `resale-locations.json`.
-- **Memory:** short line with folder and spreadsheet IDs (optional).
+If you clone [resale-ops](https://github.com/mkayander/resale-ops) and use `scripts/resale_queue.py` on a synced path:
 
-## 4. Claude Code / Codex
+- `resale-locations.example.json` → `resale-locations.json` (gitignored) or `~/.config/resale-ops/locations.json`
+- `python scripts/resale_locations.py validate`
 
-- Project `resale-locations.json` or global `~/.config/resale-ops/locations.json`.
-- **CLAUDE.md** / **AGENTS.md:** “Load locations per resale-ops `references/locations.md`.”
+This is **not** required for the portable skill in ChatGPT/Cursor cloud chat.
 
-## 5. Validate (repo checkout)
-
-```sh
-python scripts/resale_locations.py validate
-python scripts/resale_locations.py show
-```
-
-## 6. IDs from URLs
+## IDs from URLs
 
 - Folder: `https://drive.google.com/drive/folders/FOLDER_ID`
 - Sheet: `https://docs.google.com/spreadsheets/d/SPREADSHEET_ID/edit`
 
-Set `defaults.city`, `defaults.platforms`, `defaults.language` for your usual listings.
+Set `defaults.city` and `defaults.language` for your usual listings.

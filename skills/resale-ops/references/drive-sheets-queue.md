@@ -1,8 +1,10 @@
-# Google Drive + Google Sheets (optional recipe)
+# Google Drive + Google Sheets (reference cloud stack)
 
-One supported way to implement [persistence](persistence.md). **iCloud, Dropbox, OneDrive, NAS, or a local folder** work the same if `RESALE_ROOT` points at the synced tree and `scripts/resale_queue.py` can run there.
+Implements [persistence](persistence.md) via **Drive + Sheets MCP** and/or project memory—**no local disk required**. Phone uploads use the Drive app; agents read/write files and sheet rows through MCP.
 
-Repo checkout ships `scripts/resale_queue.py` and `requirements-queue.txt`.
+**iCloud, Dropbox, OneDrive**, etc. follow the same layout if the host provides equivalent MCP or the owner only uses that app manually.
+
+Optional repo checkout adds `scripts/resale_queue.py` for owners who also sync `Resale/` to a PC path.
 
 ## Why Google here
 

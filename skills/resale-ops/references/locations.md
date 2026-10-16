@@ -1,35 +1,48 @@
-# Persistent locations (use every session)
+# Persistent locations (cloud-first, every session)
 
-Load this **before** creating items or asking the owner for folder IDs again. IDs are not secrets, but treat them as owner-specific configuration.
+The skill is **global**: it must work without a fixed disk, synced folder, or repo checkout. Load IDs and defaults **before** asking the owner again.
 
-## Resolution order
+## Resolution order (highest first)
 
-1. **`RESALE_LOCATIONS`** — absolute path to a JSON file (highest priority).
-2. **Workspace** — `resale-locations.json` in the project root (or sales project root).
-3. **User config** — `~/.config/resale-ops/locations.json` (all platforms) or `~/.resale-ops/locations.json`.
-4. **Cloud queue copy** — if Google Drive MCP is available, read `.resale-locations.json` in the owner’s `Resale` folder (same JSON schema).
-5. **Legacy** — `README-resale-ops.txt` in `Resale` on Drive.
+1. **Host project memory / rules** — Cursor project or user rules, ChatGPT project instructions, Claude project `CLAUDE.md`, Codex `AGENTS.md`, or equivalent. Look for a `resale-locations` JSON block (schema below) or explicit folder/spreadsheet IDs. This is the **preferred** store when the host provides it.
 
-If nothing is found, ask once, then tell the owner to save config per [persistent-config.md](persistent-config.md) so future chats skip setup.
+2. **Cloud config file (MCP)** — When Drive (or another cloud) MCP is connected, read **`.resale-locations.json`** in the owner’s `Resale` folder. Same JSON schema. Works in a fresh chat with no local files.
+
+3. **Legacy cloud readme** — `README-resale-ops.txt` in `Resale` on Drive.
+
+4. **Local files (optional)** — Only if the runtime has a real filesystem and the owner uses offline scripts: `RESALE_LOCATIONS`, `./resale-locations.json`, or `~/.config/resale-ops/locations.json`. **Do not require these** for normal skill operation.
+
+If nothing is found, ask **once**, then tell the owner to add the JSON to **project instructions/rules** and to **`Resale/.resale-locations.json`** per [persistent-config.md](persistent-config.md).
 
 ## JSON schema (`version`: 1)
 
-| Field | Use |
-|-------|-----|
-| `drive.resale_folder_id` | Root `Resale` folder |
-| `drive.queue_folder_id` | `Resale/queue` (create items here) |
-| `drive.*_url` | Optional links for the owner |
-| `sheets.spreadsheet_id` | Index spreadsheet |
-| `sheets.queue_tab` | Usually `Queue` |
-| `local.resale_root` | Synced path for `scripts/resale_queue.py` (optional) |
-| `defaults.city`, `defaults.platforms`, `defaults.language` | Fill gaps only; explicit user message overrides |
+```json
+{
+  "version": 1,
+  "drive": {
+    "resale_folder_id": "...",
+    "queue_folder_id": "...",
+    "resale_folder_url": "...",
+    "queue_folder_url": "..."
+  },
+  "sheets": {
+    "spreadsheet_id": "...",
+    "queue_tab": "Queue",
+    "spreadsheet_url": "..."
+  },
+  "defaults": {
+    "city": "",
+    "platforms": ["avito", "youla"],
+    "language": ""
+  }
+}
+```
+
+`local.resale_root` is **optional** — only for owners who run `scripts/resale_queue.py` against a synced path. Cloud-only owners omit it.
 
 ## After loading
 
-- New item folders go under `queue/<item-id>/` (Drive MCP: parent `queue_folder_id`).
-- Update the **Queue** sheet tab when `meta.json` status or prices change.
-- Do not re-prompt for spreadsheet/folder IDs unless the file is missing or invalid.
-
-## Owner one-time setup
-
-See [persistent-config.md](persistent-config.md) for Cursor rules, ChatGPT/Claude project memory, and copying the example file.
+- Create item folders under `queue/<item-id>/` via cloud MCP (`queue_folder_id` as parent).
+- Persist `listing.md`, `meta.json`, and photos in cloud storage—not only in chat.
+- Update the spreadsheet **Queue** tab via Sheets MCP when status or prices change.
+- Apply `defaults` only when the user did not override city/language/platforms in the message.

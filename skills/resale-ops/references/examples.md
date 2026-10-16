@@ -36,9 +36,9 @@ If the owner reports the chair is live or pending, do not prepare a second creat
 
 “Write a description from these photos” authorizes identification, public spec research, and copy, not account access or photo upload.
 
-## Cross-device queue (phone → PC)
+## Cross-device queue (phone → PC, cloud)
 
-Owner syncs `Resale/` via any cloud (or copies to a PC path). Agent runs `init`, owner uploads to `inbox/`, agent runs `prepare-photos` and writes `listing.md` + `meta.json` with `status: ready`, then `index` (CSV for Excel/Notion/etc., or `sheet-push` for Google). PC posts from `photos/post/` only.
+Locations live in project rules and/or `Resale/.resale-locations.json`—no local disk. Owner uploads to cloud `inbox/`. Agent creates folders via MCP, sanitizes into `photos/post/`, writes `listing.md` + `meta.json`, updates Queue sheet. PC posts from cloud `photos/post/`.
 
 ## Reference product image
 
