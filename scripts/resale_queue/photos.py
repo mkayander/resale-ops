@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import re
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path
@@ -11,6 +12,7 @@ from PIL import Image, ImageOps
 
 PROCESSOR_ID = "resale_queue/1.0.0"
 SUPPORTED_SUFFIXES = {".jpg", ".jpeg", ".png", ".webp"}
+_POST_NAME = re.compile(r"^(\d{2})\.jpg$", re.IGNORECASE)
 
 
 @dataclass(frozen=True)
@@ -88,6 +90,30 @@ def process_one(source: Path, dest: Path, config: PhotoProcessConfig) -> PhotoPr
     )
 
 
+def list_existing_post_paths(post_dir: Path) -> list[str]:
+    """Sorted `photos/post/NN.jpg` paths for numbered posting copies already on disk."""
+    if not post_dir.is_dir():
+        return []
+    names = sorted(
+        path.name
+        for path in post_dir.iterdir()
+        if path.is_file() and _POST_NAME.match(path.name)
+    )
+    return [f"photos/post/{name}" for name in names]
+
+
+def next_post_index(post_dir: Path) -> int:
+    highest = 0
+    if post_dir.is_dir():
+        for path in post_dir.iterdir():
+            if not path.is_file():
+                continue
+            match = _POST_NAME.match(path.name)
+            if match:
+                highest = max(highest, int(match.group(1)))
+    return highest + 1 if highest else 1
+
+
 def iter_inbox_files(inbox: Path) -> list[Path]:
     if not inbox.is_dir():
         return []
@@ -113,8 +139,28 @@ def prepare_item_photos(
     if move_originals:
         original_dir.mkdir(parents=True, exist_ok=True)
 
+    inbox_files = iter_inbox_files(inbox)
+    existing_posts = list_existing_post_paths(post_dir)
+
+    if not inbox_files:
+        return {
+            "processed_at": _utc_now(),
+            "processor": PROCESSOR_ID,
+            "metadata_status": "stripped_verified" if existing_posts else "no_inbox_files",
+            "config": {
+                "max_edge": config.max_edge,
+                "max_bytes": config.max_bytes,
+                "jpeg_quality": config.jpeg_quality,
+            },
+            "files": [],
+            "post": existing_posts,
+            "skipped": "empty_inbox",
+        }
+
     results: list[PhotoProcessResult] = []
-    for index, source in enumerate(iter_inbox_files(inbox), start=1):
+    start_index = next_post_index(post_dir)
+    for offset, source in enumerate(inbox_files):
+        index = start_index + offset
         dest = post_dir / f"{index:02d}.jpg"
         results.append(process_one(source, dest, config))
         if move_originals:
@@ -125,18 +171,19 @@ def prepare_item_photos(
         else:
             source.unlink()
 
-    relative_posts = [f"photos/post/{r.destination}" for r in results]
+    new_posts = [f"photos/post/{r.destination}" for r in results]
+    all_posts = existing_posts + new_posts
     report = {
         "processed_at": _utc_now(),
         "processor": PROCESSOR_ID,
-        "metadata_status": "stripped_verified" if results else "no_inbox_files",
+        "metadata_status": "stripped_verified",
         "config": {
             "max_edge": config.max_edge,
             "max_bytes": config.max_bytes,
             "jpeg_quality": config.jpeg_quality,
         },
         "files": [r.__dict__ for r in results],
-        "post": relative_posts,
+        "post": all_posts,
     }
     return report
 
