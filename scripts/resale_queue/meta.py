@@ -41,7 +41,7 @@ def default_meta(item_id: str) -> dict:
             "processed_at": None,
             "processor": None,
         },
-        "drive_folder_url": "",
+        "folder_url": "",
         "sheet_row": None,
         "posted": {},
         "notes": "",
@@ -101,7 +101,7 @@ INDEX_FIELDS = [
     "prepared_at",
     "updated_at",
     "folder_name",
-    "drive_folder_url",
+    "folder_url",
     "notes",
 ]
 
@@ -133,7 +133,7 @@ def build_index(root: Path) -> list[dict]:
                 "prepared_at": photos.get("processed_at") or meta.get("created_at"),
                 "updated_at": meta.get("updated_at", ""),
                 "folder_name": item_dir.name,
-                "drive_folder_url": meta.get("drive_folder_url", ""),
+                "folder_url": meta.get("folder_url") or meta.get("drive_folder_url", ""),
                 "notes": meta.get("notes", ""),
             }
         )

@@ -1,22 +1,22 @@
-# Google Drive queue + optional Google Sheets
+# Google Drive + Google Sheets (optional recipe)
 
-Portable setup guide (installed with the skill). Repo checkout also ships `scripts/resale_queue.py` and `requirements-queue.txt`.
+One supported way to implement [persistence](persistence.md). **iCloud, Dropbox, OneDrive, NAS, or a local folder** work the same if `RESALE_ROOT` points at the synced tree and `scripts/resale_queue.py` can run there.
 
-Cross-device workflow: **phone** uploads photos into a Drive-synced folder; **agent** researches, sanitizes photos, writes `listing.md`; **PC** posts from `photos/post/` using the same folder or a Sheets checklist.
+Repo checkout ships `scripts/resale_queue.py` and `requirements-queue.txt`.
 
-This does **not** auto-configure Google OAuth or MCP. Sync files with [Google Drive for desktop](https://www.google.com/drive/download/) (or rclone). Sheets sync is optional via a **service account**.
+## Why Google here
 
-## 1. Create the Resale folder
+Drive desktop sync and Sheets are widely used; `sheet-push` automates index upload via the Sheets API. If you use another provider, skip `sheet-push` and use **`queue-index.csv`** in Excel, Numbers, Notion, Airtable, etc.
 
-1. Create a folder in Google Drive, e.g. `Resale`.
-2. Install Google Drive for desktop and sync that folder on PC.
+## 1. Create the Resale folder in Drive
+
+1. Create `Resale` in Google Drive.
+2. Install [Google Drive for desktop](https://www.google.com/drive/download/) (or rclone to a local path).
 3. Optional: `Resale/.resale-config.json` with `photo.max_edge`, `photo.max_bytes`, `sheet.spreadsheet_id`.
 
-Set `RESALE_ROOT` to the absolute synced path. See [persistence](persistence.md) for layout.
+Set `RESALE_ROOT` to the absolute synced path.
 
 ## 2. Install queue tooling
-
-From a clone of [resale-ops](https://github.com/mkayander/resale-ops):
 
 ```sh
 python -m pip install -r requirements-queue.txt
@@ -31,33 +31,23 @@ python scripts/resale_queue.py --root "$RESALE_ROOT" init <slug>
 python scripts/resale_queue.py --root "$RESALE_ROOT" prepare-photos <item-id>
 python scripts/resale_queue.py --root "$RESALE_ROOT" prepare-all
 python scripts/resale_queue.py --root "$RESALE_ROOT" index
-python scripts/resale_queue.py --root "$RESALE_ROOT" sheet-push
+python scripts/resale_queue.py --root "$RESALE_ROOT" sheet-push   # Google only
 ```
 
-**Phone:** upload to `Resale/queue/<item-id>/inbox/`.  
-**Agent:** write `listing.md`, update `meta.json`, run `prepare-photos` before `status: ready`.  
-**PC:** post from `photos/post/` only.
+## 4. Photo sanitization
 
-## 4. Photo sanitization defaults
+See [persistence](persistence.md). Defaults: 2048 px edge, ~2 MB JPEG, metadata stripped.
 
-| Setting | Default |
-|--------|---------|
-| Longest edge | 2048 px |
-| Target size | 2 MB JPEG |
-| Metadata | stripped on save |
+## 5. Google Sheets index (optional)
 
-`meta.json` → `photos.metadata_status`: `stripped_verified` after `prepare-photos`.
+Columns match `queue-index.csv`: `id`, `status`, `title`, `city`, `list_price_rub`, `quick_sale_rub`, `metadata_status`, `post_photo_count`, `prepared_at`, `updated_at`, `folder_name`, `folder_url`, `notes`.
 
-## 5. Optional Google Sheets
-
-Dashboard columns: `id`, `status`, `title`, `city`, `list_price_rub`, `quick_sale_rub`, `metadata_status`, `post_photo_count`, `prepared_at`, `updated_at`, `folder_name`, `drive_folder_url`, `notes`.
-
-1. Create sheet tab `Queue`.
-2. Service account + Sheets API; share sheet with service account email.
+1. Tab named `Queue`.
+2. Service account + Sheets API; share the spreadsheet with the service account email.
 3. `export GOOGLE_APPLICATION_CREDENTIALS=...` and `export RESALE_SHEET_ID=...`
-4. Run `index` then `sheet-push`.
+4. `index` then `sheet-push`.
 
-Without API: import `queue-index.csv` into the sheet manually.
+Without API: upload or import `queue-index.csv` into Drive/Sheets manually.
 
 ## 6. Security
 

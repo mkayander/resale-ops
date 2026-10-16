@@ -5,7 +5,8 @@
     "max_bytes": 2000000,
     "jpeg_quality": 85
   },
-  "sheet": {
+  "index": {
+    "comment": "Optional. Google Sheets only; else use queue-index.csv in any spreadsheet app.",
     "spreadsheet_id": "paste-google-sheet-id",
     "sheet_name": "Queue"
   }

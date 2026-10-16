@@ -36,9 +36,9 @@ If the owner reports the chair is live or pending, do not prepare a second creat
 
 “Write a description from these photos” authorizes identification, public spec research, and copy, not account access or photo upload.
 
-## Drive queue (phone → PC)
+## Cross-device queue (phone → PC)
 
-Owner syncs `Resale/` with Google Drive. Agent runs `init`, owner uploads to `inbox/`, agent runs `prepare-photos` and writes `listing.md` + `meta.json` with `status: ready`, then `index` (and `sheet-push` if configured). PC posts from `photos/post/` only.
+Owner syncs `Resale/` via any cloud (or copies to a PC path). Agent runs `init`, owner uploads to `inbox/`, agent runs `prepare-photos` and writes `listing.md` + `meta.json` with `status: ready`, then `index` (CSV for Excel/Notion/etc., or `sheet-push` for Google). PC posts from `photos/post/` only.
 
 ## Reference product image
 

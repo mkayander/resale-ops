@@ -1,17 +1,19 @@
-# Google Drive queue + optional Google Sheets
+# Queue storage (any provider) + Google option
 
-Full developer copy of the portable guide lives in the skill:
+The resale queue is **not tied to Google**. Use any folder that syncs between phone and PC (iCloud, Dropbox, OneDrive, NAS, WebDAV, or a local path). The agent and scripts only need a consistent **`RESALE_ROOT`**.
 
-[skills/resale-ops/references/drive-sheets-queue.md](../skills/resale-ops/references/drive-sheets-queue.md)
-
-Also see [persistence](../skills/resale-ops/references/persistence.md) and the folder template [templates/resale-queue/README.md](../templates/resale-queue/README.md).
+- **Portable rules:** [skills/resale-ops/references/persistence.md](../skills/resale-ops/references/persistence.md)
+- **Google Drive + Sheets recipe:** [skills/resale-ops/references/drive-sheets-queue.md](../skills/resale-ops/references/drive-sheets-queue.md)
+- **Folder template:** [templates/resale-queue/README.md](../templates/resale-queue/README.md)
 
 ## Quick start (repo checkout)
 
 ```sh
 python -m pip install -r requirements-queue.txt
-export RESALE_ROOT="/path/to/synced/Resale"
+export RESALE_ROOT="/path/to/Resale"   # synced or local
 python scripts/resale_queue.py --root "$RESALE_ROOT" init my-item-slug
 ```
 
-Copy [templates/resale-queue/resale-config.example.json](../templates/resale-queue/resale-config.example.json) to `Resale/.resale-config.json` if you want checked-in defaults.
+Optional config: [templates/resale-queue/resale-config.example.json](../templates/resale-queue/resale-config.example.json) → `Resale/.resale-config.json`.
+
+**Spreadsheet checklist:** run `index`, then open `queue-index.csv` in Excel, Numbers, Notion, Airtable, or import into Google Sheets—no API required.

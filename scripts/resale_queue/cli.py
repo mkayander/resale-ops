@@ -1,4 +1,4 @@
-"""CLI for resale queue folders (Drive-sync friendly)."""
+"""CLI for resale queue folders (any synced or local RESALE_ROOT)."""
 
 from __future__ import annotations
 
@@ -84,11 +84,13 @@ def cmd_sheet_push(args: argparse.Namespace) -> None:
 
 
 def build_parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(description="Resale queue: photos, index, optional Google Sheets")
+    parser = argparse.ArgumentParser(
+        description="Resale queue: photos, index, optional Google Sheets push",
+    )
     parser.add_argument(
         "--root",
         default=".",
-        help="Resale root (sync this folder with Google Drive Desktop)",
+        help="Resale root directory (cloud-synced or local path to Resale/)",
     )
     sub = parser.add_subparsers(dest="command", required=True)
 
