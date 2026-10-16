@@ -1,0 +1,29 @@
+---
+description: Resale queue — load saved Drive/Sheets IDs and run resale-ops without re-setup
+globs:
+alwaysApply: false
+---
+
+# resale-ops locations
+
+Before resale work, load owner locations (first hit wins):
+
+1. `RESALE_LOCATIONS` env path
+2. `./resale-locations.json`
+3. `~/.config/resale-ops/locations.json`
+4. Google Drive MCP: read `Resale/.resale-locations.json`
+
+Then follow the **resale-ops** skill (`skills/resale-ops/SKILL.md`).
+
+## Owner IDs (replace once or use resale-locations.json)
+
+- Drive `Resale` folder ID: `REPLACE_ME`
+- Drive `queue` folder ID: `REPLACE_ME`
+- Spreadsheet ID: `REPLACE_ME`
+- Sheet tab: `Queue`
+
+## Routine
+
+- New item: folder under `queue/<item-id>/` with `inbox/`, then `prepare-photos` → `photos/post/`
+- Persist copy in `listing.md` + `meta.json`; update Queue sheet row
+- No marketplace login or auto-publish unless owner explicitly requests and an admitted adapter exists

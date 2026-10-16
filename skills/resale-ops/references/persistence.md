@@ -29,7 +29,7 @@ Resale/
   queue-index.csv       ← optional dashboard in any spreadsheet tool
 ```
 
-Ask for `RESALE_ROOT` (absolute path to `Resale/`) and item `slug` or existing `item-id`.
+Ask for `RESALE_ROOT` only when not in [locations](locations.md) (`local.resale_root`) and local `prepare-photos` is needed. For Drive MCP, use saved `drive.queue_folder_id`. Item `slug` or existing `item-id` still required per listing.
 
 ## Agent responsibilities
 

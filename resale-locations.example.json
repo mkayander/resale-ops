@@ -1,0 +1,23 @@
+{
+  "version": 1,
+  "drive": {
+    "resale_folder_id": "PASTE_DRIVE_FOLDER_ID",
+    "resale_folder_url": "https://drive.google.com/drive/folders/...",
+    "queue_folder_id": "PASTE_QUEUE_SUBFOLDER_ID",
+    "queue_folder_url": "https://drive.google.com/drive/folders/..."
+  },
+  "sheets": {
+    "spreadsheet_id": "PASTE_SPREADSHEET_ID",
+    "spreadsheet_url": "https://docs.google.com/spreadsheets/d/.../edit",
+    "queue_tab": "Queue"
+  },
+  "local": {
+    "resale_root": "/optional/synced/path/to/Resale"
+  },
+  "defaults": {
+    "city": "",
+    "platforms": ["avito", "youla"],
+    "language": ""
+  },
+  "notes": "Copy to resale-locations.json (gitignored) or ~/.config/resale-ops/locations.json. See docs/PERSISTENT-CONFIG.md."
+}

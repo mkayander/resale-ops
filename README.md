@@ -21,6 +21,7 @@
 Синхронизируйте папку `Resale/` через Google Drive, iCloud, Dropbox, OneDrive или другое хранилище: фото в `inbox/`, агент готовит `listing.md`, скрипт сжимает и очищает метаданные в `photos/post/`. Индекс — `queue-index.csv` (Excel, Notion и т.д.) или опционально Google Sheets.
 
 - [Очередь и хранилище](docs/DRIVE-SHEETS-QUEUE.md)
+- [Постоянные ID (память / rules)](docs/PERSISTENT-CONFIG.md) — `resale-locations.json`
 - Команды: `python scripts/resale_queue.py` (`init`, `prepare-photos`, `index`, `sheet-push`)
 - Зависимости: `python -m pip install -r requirements-queue.txt`
 

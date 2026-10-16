@@ -28,6 +28,8 @@ When the owner uses a **phone → PC** workflow, follow [persistence](references
 
 ### 1. Establish inputs and mode
 
+Load owner [locations](references/locations.md) (`resale-locations.json`, `~/.config/resale-ops/locations.json`, `RESALE_LOCATIONS`, or Drive `Resale/.resale-locations.json` via MCP). Use saved folder and spreadsheet IDs; apply `defaults` only when the user did not specify city/language/platforms.
+
 Read the platform registry and record `prepare_only` or a named, previously admitted adapter for each platform. In `prepare_only`, do not connect marketplace MCP, use the owner’s account, or automate forms/upload. Anonymous public research via search or unauthenticated page views is permitted per [account safety](references/account-safety.md).
 
 If `RESALE_ROOT` or a synced `Resale/` path is in scope, use the [persistence](references/persistence.md) queue: run `prepare-photos` before treating images as posting-ready; persist packages to `listing.md` and `meta.json`; rebuild `index` (and `sheet-push` when configured).
