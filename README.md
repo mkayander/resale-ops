@@ -16,6 +16,14 @@
 
 Не вводите пароли и SMS-коды в чат. Не добавляйте личные фотографии, адреса и выгрузки аккаунта в публичный репозиторий.
 
+## Очередь Google Drive + Sheets (телефон → ПК)
+
+Синхронизируйте папку `Resale/` через Google Drive: фото в `inbox/`, агент готовит `listing.md`, скрипт сжимает и очищает метаданные в `photos/post/`. Опционально — индекс в Google Sheets.
+
+- [Настройка Drive/Sheets](docs/DRIVE-SHEETS-QUEUE.md)
+- Команды: `python scripts/resale_queue.py` (`init`, `prepare-photos`, `index`, `sheet-push`)
+- Зависимости: `python -m pip install -r requirements-queue.txt`
+
 ## Установка и распространение
 
 - [Установка для трёх приложений](docs/INSTALL.md).

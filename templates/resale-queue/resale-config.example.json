@@ -1,0 +1,12 @@
+{
+  "comment": "Copy to <Resale>/.resale-config.json and adjust. Agents read this for defaults.",
+  "photo": {
+    "max_edge": 2048,
+    "max_bytes": 2000000,
+    "jpeg_quality": 85
+  },
+  "sheet": {
+    "spreadsheet_id": "paste-google-sheet-id",
+    "sheet_name": "Queue"
+  }
+}

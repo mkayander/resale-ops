@@ -1,2 +1,3 @@
-# Package validation only; the installer has no third-party dependencies.
+# Package validation and queue tests.
 PyYAML==6.0.3
+Pillow==11.3.0

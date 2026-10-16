@@ -10,7 +10,7 @@ Present compactly in the conversation language selected by `SKILL.md`:
 6. **Calculation** — tier used, `n`, range, median or estimate, exclusions, adjustments, confidence, and limitations. For admitted integrations include source/version, warnings, incompleteness, and cache age. Do not use current `ru-marketplace-mcp`. Keep new-item prices outside the used sample.
 7. **Prices** — market reference, quick-sale price, and selected listing price.
 8. **Listing package per platform** — title, description, candidate category, attributes, price, terms, and unresolved fields.
-9. **Photos** — user listing filenames/order; optional **reference images** (URLs or local names) marked as non-listing unless the owner adopts them; visible personal data; metadata-inspection status. Never claim EXIF removal without verification.
+9. **Photos** — queue: `photos/post/` filenames/order after `prepare-photos`; optional **reference images** (URLs) in `listing.md`; visible personal data; `photos.metadata_status` from `meta.json`. Never claim EXIF removal without the prepare script run.
 10. **Account** — in `prepare_only`, state that the owner’s marketplace account was not opened or changed (public web research may still have occurred). For admitted methods, report observed fields/errors without personal data.
 11. **Status** — `prepared | form_filled | draft_saved | blocked | submitted | published`, with evidence source. Manual work ends at `prepared`; label later owner-reported status as such.
 12. **Next step** — make the stop before publication explicit.
