@@ -1,0 +1,4 @@
+# Optional queue tooling (photos + Google Sheets). Not required for skill install or package check.
+Pillow==11.3.0
+google-api-python-client==2.184.0
+google-auth==2.41.1

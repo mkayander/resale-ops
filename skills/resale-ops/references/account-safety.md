@@ -4,11 +4,24 @@ Choose an access method from the [platform registry](platforms.md) first. A page
 
 ## Default: `prepare_only`
 
-Analyze supplied photos/data and produce copy, pricing, and field packages. The user opens listings, fills forms, uploads photos, and publishes through the normal site/app. Do not connect their session to MCP or open marketplace cards/forms—even logged out—without an admitted read adapter.
+Analyze supplied photos/data and produce copy, pricing, and field packages. The user fills forms, uploads photos, and publishes through the normal site/app on their account.
 
-General web search may locate links, but snippets are not verified offers. Label supplied text/screenshots `user_provided`; use `user_verified` only when the owner confirms current state and supplies the check time. Never represent either as the agent’s live check, and do not open a URL merely because the user supplied it.
+### Allowed without an admitted adapter
 
-Avito and Youla are `prepare_only` in this release. Do not configure keys, OAuth, feeds, browser MCP, or paid integrations. If asked to autofill, explain this boundary once and prepare a manual-transfer package.
+- **General internet search** (built-in web search, fetch of public URLs) for product specs, official measurements, paraphrased pros, reference product images, and **ballpark** used-price estimates. Super-precise live marketplace medians are not required for a useful listing price.
+- **Anonymous unauthenticated** viewing of public pages, including marketplace search or listing pages, at low volume for the current item only. Use no owner login, cookies, or account-linked MCP. Stop on CAPTCHA, 401/403/429, or verification prompts; do not rotate IP, proxy, or fingerprint.
+
+Label agent-found public facts `web_public` with source URL and limitations. Snippets alone are weak; prefer opening the public page when the tool allows.
+
+### Not allowed in `prepare_only`
+
+- Connecting the owner’s session to MCP, exporting cookies/storage, or automating login.
+- Form entry, draft save, feed import, photo upload, messaging buyers, or any action that changes account state.
+- High-volume scraping, background monitoring, or repeated probing after a block.
+
+Label owner-supplied text/screenshots `user_provided`; use `user_verified` only when the owner confirms current state and supplies the check time. Do not open lookalike or credential-bearing URLs from listings.
+
+Avito and Youla remain `prepare_only` for **account operations** in this release. Do not configure keys, OAuth, feeds, or paid integrations tied to the owner’s account. If asked to autofill or publish, explain this boundary once and prepare a manual-transfer package.
 
 ## Admitting automation
 

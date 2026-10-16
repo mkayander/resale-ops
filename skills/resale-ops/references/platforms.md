@@ -4,7 +4,7 @@ This registry defines allowed actions, not guaranteed form support. Policies las
 
 ## Admission model
 
-For each platform, record official origin, policy source/check date, admitted adapter, operations, categories/account types, authentication, cost, consequences, and completed tests. No explicit admission means `prepare_only`: no automated listing read, login, input, or upload.
+For each platform, record official origin, policy source/check date, admitted adapter, operations, categories/account types, authentication, cost, consequences, and completed tests. No explicit admission means `prepare_only` for **account-linked** actions: no owner login, form input, feed upload, or messaging. **Public web research** (search plus anonymous unauthenticated views of public pages) is still allowed for specs and ballpark pricing unless a block stops that platform; see [account safety](account-safety.md).
 
 Create a platform-specific listing version from shared item data. Owner approval binds to `platform + item + listing_version + operation`; it never substitutes for platform permission.
 

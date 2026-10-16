@@ -1,0 +1,41 @@
+---
+description: Resale-ops cloud queue — IDs in rules, no local disk required
+globs:
+alwaysApply: false
+---
+
+# resale-ops (cloud)
+
+Follow the **resale-ops** skill. Load locations from this rule first; if Drive MCP is connected, also read `Resale/.resale-locations.json` (must match).
+
+## resale-locations
+
+```json
+{
+  "version": 1,
+  "drive": {
+    "resale_folder_id": "REPLACE",
+    "queue_folder_id": "REPLACE",
+    "resale_folder_url": "REPLACE",
+    "queue_folder_url": "REPLACE"
+  },
+  "sheets": {
+    "spreadsheet_id": "REPLACE",
+    "queue_tab": "Queue",
+    "spreadsheet_url": "REPLACE"
+  },
+  "defaults": {
+    "city": "REPLACE",
+    "platforms": ["avito", "youla"],
+    "language": ""
+  }
+}
+```
+
+## Routine
+
+- Phone uploads → `queue/<item-id>/inbox/` in cloud
+- Sanitize → `photos/post/` via temp workspace + prepare script or equivalent
+- Persist `listing.md`, `meta.json`, Queue sheet row via MCP
+- Never ask for folder/spreadsheet IDs again unless the block above is empty
+- No marketplace login or auto-publish in prepare_only

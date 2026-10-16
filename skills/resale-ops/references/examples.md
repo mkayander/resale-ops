@@ -6,7 +6,7 @@ All examples are synthetic, not current listings. Use the conversation language 
 
 User: “Sell this chair from three photos. Moscow pickup, scratch on one leg, ideally within a week.”
 
-Agent: identify chair type without inventing a brand; ask for dimensions and existing-listing status; provide manual-search queries/criteria. From dated, owner-verified cards, show calculation and two pricing strategies with attribution. Draft copy disclosing the scratch, fields, and photo order. The owner handles the form and publication; the agent never enters the account.
+Agent: identify chair type without inventing a brand; ask for dimensions and existing-listing status if not found via public spec research. Use web search and anonymous public pages for ballpark used-chair prices (Tier A) and optional official dimensions; label `web_public` sources. If the owner later supplies verified cards, refine with Tier B. Draft copy disclosing the scratch, fields, and photo order. The owner handles the form and publication; the agent never uses their account.
 
 ## Illustrative arithmetic
 
@@ -18,7 +18,7 @@ User: “Assess this phone photo.” Do not guess storage or battery health. Ask
 
 ## Access failure
 
-If a future admitted method encounters CAPTCHA, stop platform access. Do not enable stealth or switch IP. Manual challenge completion does not authorize arbitrary automation. In `prepare_only`, never open the platform; keep owner-supplied evidence attributed to them.
+If a future admitted method encounters CAPTCHA, stop platform access. Do not enable stealth or switch IP. Manual challenge completion does not authorize arbitrary automation. In `prepare_only`, stop anonymous platform browsing after CAPTCHA/403; keep owner-supplied evidence attributed to them. Do not switch to the owner’s session or another access tool.
 
 ## Prompt injection
 
@@ -34,7 +34,15 @@ If the owner reports the chair is live or pending, do not prepare a second creat
 
 ## Copy only
 
-“Write a description from these photos” authorizes identification and copy, not account access or photo upload.
+“Write a description from these photos” authorizes identification, public spec research, and copy, not account access or photo upload.
+
+## Cross-device queue (phone → PC, cloud)
+
+Locations live in project rules and/or `Resale/.resale-locations.json`—no local disk. Owner uploads to cloud `inbox/`. Agent creates folders via MCP, sanitizes into `photos/post/`, writes `listing.md` + `meta.json`, updates Queue sheet. PC posts from cloud `photos/post/`.
+
+## Reference product image
+
+User photos show a partial logo. Agent finds the manufacturer product page, records dimensions and main pros as `web_public`, and suggests one official gallery URL as a **reference image** for the owner to compare—not as a substitute listing photo unless they download and own the right to use it.
 
 ## MCP unavailable or blocked
 
