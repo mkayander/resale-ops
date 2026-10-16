@@ -1,41 +1,12 @@
 ---
-description: Resale-ops cloud queue — IDs in rules, no local disk required
-globs:
+description: Resale-ops — copy to .cursor/rules/ and replace REPLACE with your IDs (template for forks)
 alwaysApply: false
 ---
 
-# resale-ops (cloud)
+# resale-ops locations (template)
 
-Follow the **resale-ops** skill. Load locations from this rule first; if Drive MCP is connected, also read `Resale/.resale-locations.json` (must match).
+Copy to `.cursor/rules/resale-ops.mdc` in your sales project, or paste the JSON into **Cursor User rules** for all repos.
 
-## resale-locations
+See `skills/resale-ops/references/project-memory-snippet.md` for the JSON shape.
 
-```json
-{
-  "version": 1,
-  "drive": {
-    "resale_folder_id": "REPLACE",
-    "queue_folder_id": "REPLACE",
-    "resale_folder_url": "REPLACE",
-    "queue_folder_url": "REPLACE"
-  },
-  "sheets": {
-    "spreadsheet_id": "REPLACE",
-    "queue_tab": "Queue",
-    "spreadsheet_url": "REPLACE"
-  },
-  "defaults": {
-    "city": "REPLACE",
-    "platforms": ["avito", "youla"],
-    "language": ""
-  }
-}
-```
-
-## Routine
-
-- Phone uploads → `queue/<item-id>/inbox/` in cloud
-- Sanitize → `photos/post/` via temp workspace + prepare script or equivalent
-- Persist `listing.md`, `meta.json`, Queue sheet row via MCP
-- Never ask for folder/spreadsheet IDs again unless the block above is empty
-- No marketplace login or auto-publish in prepare_only
+Forks of [resale-ops](https://github.com/mkayander/resale-ops): the upstream repo may ship an owner-specific `.cursor/rules/resale-ops.mdc`; replace IDs or delete and use User rules + your Drive `.resale-locations.json`.
