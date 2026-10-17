@@ -1,10 +1,10 @@
 # Browser protocol for admitted adapters
 
-Read [account safety](account-safety.md) and the [platform registry](platforms.md) first. Avito and Youla remain `prepare_only`; this protocol does not authorize their automation. Local test forms without real accounts are allowed for adapter development.
+Read [account safety](account-safety.md) and the [platform registry](platforms.md) first. Avito and Youla remain manual-final-action platforms: an explicit owner request may authorize assisted browser steps, but never unattended publication. Local test forms without real accounts are allowed for adapter development.
 
 ## Tool boundary
 
-Tool availability is not admission. Inspect current schemas for reading, input, and upload instead of assuming tool names or arguments. For authorized work, use a reviewed pinned version and a dedicated task profile. Never run `@latest` beside an account or connect the user’s entire personal browser. The user logs in manually.
+Tool availability is not admission. Inspect current schemas for reading, input, and upload instead of assuming tool names or arguments. For authorized work, use a reviewed pinned version and a dedicated task profile. Never run `@latest` beside an account or connect the user’s entire personal browser. The user logs in and solves CAPTCHA manually.
 
 Do not export storage state/cookies, expose remote debugging to a network, or request broad file access. Giving a local path to remote MCP neither makes the file available nor authorizes transfer. Origin allowlists help but do not replace URL/redirect/permission checks. Browser tools may expose eval, unrelated tabs, and arbitrary controls; prompt restrictions are not technical isolation. Remain manual if access cannot be constrained.
 
@@ -20,6 +20,10 @@ Do not export storage state/cookies, expose remote debugging to a network, or re
 6. Read values back. Use `draft_saved` only with explicit UI evidence; otherwise use `form_filled` and warn that closing may lose data.
 7. A human performs the final action by default. Admitted automated submission requires explicit approval of the specific final version; payment requires separate approval.
 
-No parallel/background actions or repeated login. A normal transient failure may be retried once only after checking state and only when it was not a submission. Never retry or switch transport after CAPTCHA, 401/403/429, account restriction, or challenge. For ambiguous submission outcome, check status through an admitted method or ask the user—never resubmit.
+No parallel/background actions or repeated login. A normal transient failure may be retried once only after checking state and only when it was not a submission. After a CAPTCHA, pause automation while the owner solves it; resume only the same admitted method after the owner’s confirmation. Never switch transport after CAPTCHA, 401/403/429, account restriction, or challenge. For ambiguous submission outcome, check status through an admitted method or ask the user—never resubmit.
 
 Statuses: `prepared`, `form_filled`, `draft_saved`, `blocked`, `submitted`, `published`. Always state whether the agent observed the status through an admitted method or the owner reported it. Never infer an upgrade.
+
+## CDP and Chrome DevTools MCP
+
+When Chrome reports a listener such as `[::1]:9222`, do not assume `127.0.0.1:9222` is reachable from WSL. Run the MCP process in the Windows network context or configure it with a reachable browser endpoint. Use a dedicated Chrome profile, keep the listener local, and inspect the active tab before any input. CDP connectivity does not itself authorize an operation.
