@@ -2,7 +2,7 @@
   "name": "resale-ops",
   "private": true,
   "packageManager": "pnpm@9.15.9",
-  "version": "0.5.2",
+  "version": "0.5.3",
   "description": "Release tooling for the resale-ops Agent Skill / Agent Plugins package",
   "license": "MIT",
   "repository": {
