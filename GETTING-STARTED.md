@@ -20,7 +20,8 @@ https://raw.githubusercontent.com/mkayander/resale-ops/main/docs/AGENT-SETUP.md
 Прочитай эту инструкцию и настрой Resale Ops пошагово. Проверь, что этот чат
 находится в отдельном ChatGPT Project. Если проекта нет, попроси меня создать его.
 Проверь Google Drive и Google Sheets; если подключения нет, попроси меня подключить.
-Найди или создай Resale, queue, таблицу Queue и .resale-locations.json.
+Найди или создай в Google Drive папку Resale, queue, таблицу Queue и приватный файл
+.resale-locations.json внутри Resale.
 Если инструкции Resale Ops ещё нет в настройках проекта, выдай готовый блок для
 копирования с фактическими ссылками и ID. Не выдумывай результаты, всё проверяй чтением.
 После настройки покажи ссылки и попроси загрузить фотографии первой вещи.
@@ -109,7 +110,8 @@ Google Drive — фото и материалы объявлений. Google She
 id, status, title, city, list_price_rub, quick_sale_rub, metadata_status,
 post_photo_count, prepared_at, updated_at, folder_name, folder_url, notes.
 При переиспользовании таблицы сохрани её строки, формулы и дополнительные столбцы.
-Сохрани реальные ID и ссылки в Resale/.resale-locations.json по схеме skill.
+Создай или обнови приватный файл .resale-locations.json внутри папки Resale в Drive
+по схеме skill и проверь его чтением.
 Покажи готовые строки для замены REPLACE в инструкциях проекта.
 Город по умолчанию: [ваш город]. Площадки: Авито и Юла.
 Проверь результат чтением и покажи ссылки на Resale, queue и таблицу.
@@ -118,7 +120,7 @@ post_photo_count, prepared_at, updated_at, folder_name, folder_url, notes.
 
 Откройте ссылки, проверьте результат и замените REPLACE в блоке инструкций проекта.
 Не храните реальные ID только в этом чате: новым чатам нужны инструкции проекта
-или доступ к приватному `Resale/.resale-locations.json`.
+или доступ к приватному файлу `.resale-locations.json` внутри папки `Resale` в Drive.
 
 ## 6. Загрузите фото и подготовьте первую вещь
 
