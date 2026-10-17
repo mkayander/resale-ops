@@ -1,17 +1,18 @@
 # Agents working in this repository
 
-## Cloud Agents (Cursor)
+## resale-ops (portable skill)
 
-This repo is set up for **resale-ops** with a persistent cloud queue.
+- Skill: `skills/resale-ops/SKILL.md`
+- **Personal queue IDs** do not belong in this repo. Store them in:
+  - Cursor **User rules** or a **gitignored** `.cursor/rules/resale-ops.mdc` (see `templates/cursor-rules/resale-ops.mdc`)
+  - Cloud: `Resale/.resale-locations.json` on your Drive (read via MCP)
+  - Optional: `resale-locations.json` or `~/.config/resale-ops/locations.json` (gitignored)
 
-1. **Project rules** — `.cursor/rules/resale-ops.mdc` (Drive + Sheets IDs; applied on every run in this repo).
-2. **Skill** — `skills/resale-ops/SKILL.md` (install locally per `docs/INSTALL.md` for desktop; cloud agents read from the repo).
-3. **MCP** — enable **Google Drive** and **Google Sheets** on [Cloud Agents](https://cursor.com/agents) and complete OAuth.
-4. **Drive anchor** — `Resale/.resale-locations.json` (same JSON as the rule file; used when rules are empty).
+## Cloud Agents
 
-Optional: copy the JSON from `.cursor/rules/resale-ops.mdc` into **Cursor → Settings → Rules → User rules** if you use resale-ops from **other** repositories.
-
-Photo tooling on cloud VMs: `pip install -r requirements-queue.txt` (or use the environment `install` in `.cursor/environment.json` when present).
+1. Enable **Google Drive** and **Google Sheets** MCP on [cursor.com/agents](https://cursor.com/agents) (OAuth).
+2. Read locations per `skills/resale-ops/references/locations.md`.
+3. `.cursor/environment.json` installs `requirements-queue.txt` for photo sanitization on the VM.
 
 ## Package checks
 

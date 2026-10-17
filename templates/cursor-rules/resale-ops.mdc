@@ -1,12 +1,34 @@
 ---
-description: Resale-ops — copy to .cursor/rules/ and replace REPLACE with your IDs (template for forks)
-alwaysApply: false
+description: Resale-ops — personal IDs; copy to .cursor/rules/ locally (never commit real IDs to public repos)
+alwaysApply: true
 ---
 
-# resale-ops locations (template)
+# resale-ops locations (personal — replace REPLACE)
 
-Copy to `.cursor/rules/resale-ops.mdc` in your sales project, or paste the JSON into **Cursor User rules** for all repos.
+Copy this file to `.cursor/rules/resale-ops.mdc` in **your** sales project (gitignored), or paste the JSON into **Cursor User rules** / ChatGPT project instructions. Do **not** commit your filled copy to a public repository.
 
-See `skills/resale-ops/references/project-memory-snippet.md` for the JSON shape.
+Load from Drive `Resale/.resale-locations.json` via MCP when project rules are empty.
 
-Forks of [resale-ops](https://github.com/mkayander/resale-ops): the upstream repo may ship an owner-specific `.cursor/rules/resale-ops.mdc`; replace IDs or delete and use User rules + your Drive `.resale-locations.json`.
+Follow `skills/resale-ops/SKILL.md`.
+
+```json
+{
+  "version": 1,
+  "drive": {
+    "resale_folder_id": "REPLACE",
+    "resale_folder_url": "REPLACE",
+    "queue_folder_id": "REPLACE",
+    "queue_folder_url": "REPLACE"
+  },
+  "sheets": {
+    "spreadsheet_id": "REPLACE",
+    "spreadsheet_url": "REPLACE",
+    "queue_tab": "Queue"
+  },
+  "defaults": {
+    "city": "REPLACE",
+    "platforms": ["avito", "youla"],
+    "language": ""
+  }
+}
+```

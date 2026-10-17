@@ -28,7 +28,7 @@ For **phone → PC**, use **cloud** [persistence](references/persistence.md): qu
 
 ### 1. Establish inputs and mode
 
-Load owner [locations](references/locations.md): **project rules/memory first**, then cloud `Resale/.resale-locations.json` via MCP if needed; local JSON paths only when present—never require disk access. Apply `defaults` only when the user did not specify city/language/platforms.
+Load owner [locations](references/locations.md): **host rules/memory first**, then cloud `Resale/.resale-locations.json` via MCP; never read personal IDs from a public repo checkout. Do not commit the owner’s IDs to git. Apply `defaults` only when the user did not specify city/language/platforms.
 
 Read the platform registry and record `prepare_only` or a named, previously admitted adapter for each platform. In `prepare_only`, do not connect marketplace MCP, use the owner’s account, or automate forms/upload. Anonymous public research via search or unauthenticated page views is permitted per [account safety](references/account-safety.md).
 

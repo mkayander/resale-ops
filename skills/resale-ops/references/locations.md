@@ -14,6 +14,8 @@ The skill is **global**: it must work without a fixed disk, synced folder, or re
 
 If nothing is found, ask **once**, then tell the owner to add the JSON to **project instructions/rules** and to **`Resale/.resale-locations.json`** per [persistent-config.md](persistent-config.md).
 
+**Never commit** filled locations JSON or personal rules to a **public** repository; use User rules, gitignored `.cursor/rules/resale-ops.mdc`, Drive, or dashboard environment variables.
+
 ## JSON schema (`version`: 1)
 
 ```json

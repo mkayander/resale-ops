@@ -19,15 +19,16 @@ Add one line of behavior:
 
 > When I mention resale or selling an item, follow the **resale-ops** skill. Load `resale-locations` from these instructions (or Drive `Resale/.resale-locations.json` if MCP is connected). Do not ask for folder IDs again unless missing.
 
-## Cursor Cloud Agents (this repository)
+## Cursor Cloud Agents
+
+**Do not commit personal folder or spreadsheet IDs to the public skill repo.**
 
 | Layer | Purpose |
 |-------|---------|
-| `.cursor/rules/resale-ops.mdc` | Project rules — IDs load on every Cloud Agent run for this repo |
-| `AGENTS.md` | Cloud entrypoint: skill, MCP, Drive file |
-| `.cursor/environment.json` | `install` runs `pip install -r requirements-queue.txt` on the VM |
-| Drive `Resale/.resale-locations.json` | Backup when rules are empty; phone-friendly |
-| **User rules** (optional) | Paste the same JSON for resale work in **other** repos |
+| **User rules** or gitignored `.cursor/rules/resale-ops.mdc` | Your IDs (copy from `templates/cursor-rules/resale-ops.mdc`) |
+| Drive `Resale/.resale-locations.json` | Cloud copy; Drive MCP reads it each session |
+| Cloud **Environment variable** secrets (dashboard) | Optional non-secret IDs as env vars scoped to your environment |
+| `.cursor/environment.json` (this repo) | Installs `requirements-queue.txt` only — no personal data |
 
 Enable **Google Drive** and **Google Sheets** MCP on [cursor.com/agents](https://cursor.com/agents). Docs: [Cloud setup](https://cursor.com/docs/cloud-agent/setup.md), [Rules](https://cursor.com/docs/rules).
 
