@@ -1,6 +1,6 @@
-# Resale Ops: agent setup
+# Resale Ops: web ChatGPT Project setup
 
-Set up Resale Ops for the current user. Follow these steps in order and never claim that a resource was created or connected until you verify it by reading it back. Communicate with the user in the language they prefer, and generate copyable blocks in that language.
+Set up Resale Ops for the current user in a web ChatGPT Project. Follow these steps in order and never claim that a resource was created or connected until you verify it by reading it back. Communicate with the user in the language they prefer, and generate copyable blocks in that language. Codex, Claude Code, and Cursor are optional alternative clients; do not send the user through their installation flow for the ChatGPT Project setup.
 
 ## Setup sequence
 
