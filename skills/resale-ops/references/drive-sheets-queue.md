@@ -44,16 +44,19 @@ With the owner's setup request:
 
 ## 3. First item: phone → agent → manual posting
 
-1. Create a unique `queue/<item-id>/` folder with `inbox/`, `photos/original/`,
-   `photos/post/`, `listing.md` and `meta.json`; add one Queue row with `draft`.
+1. Create a unique `queue/<item-id>/` folder with temporary `inbox/`, permanent
+   `photos/post/`, `listing.md` and `meta.json`; do not create `photos/original/`.
+   Add one Queue row with `draft`.
    Inspect for an existing item before creating a duplicate. Return the inbox URL.
 2. The owner uploads photos of one item through the Drive mobile app or website.
 3. Read the selected inbox only. Ask consequential questions, research public
    prices and prepare separate marketplace drafts. Save listing text and metadata
    in Drive and update only the matching Queue row.
 4. Create sanitized posting copies with real processing, using a temporary
-   workspace when needed, and upload them to `photos/post/`. No permanent desktop
-   sync is needed. Preserve originals. Defaults for the optional utility are
+   workspace when needed, and upload them to `photos/post/`. Verify the upload,
+   then delete temporary Drive `inbox/` originals; keep no duplicate or archived originals in Drive.
+   If upload fails, retain the original until recovery. No permanent desktop
+   sync is needed. Defaults for the optional utility are
    a 2048-pixel edge and a target near 2 MB; inspect actual output size and EXIF.
 5. Set `ready` only after drafts, selected price and sanitized photos are complete
    and verified. If photo download, processing or upload is unavailable, retain
