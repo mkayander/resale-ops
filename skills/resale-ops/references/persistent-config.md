@@ -61,3 +61,7 @@ or private cloud config. At the start of a new chat, compare it with the current
 skill and references, summarize relevant behavior changes, and offer to refresh the
 project instructions or uploaded snapshot. If the comparison cannot be performed,
 report that limitation instead of claiming the source is up to date.
+
+In a long-lived chat, repeat the check after a long pause, before a new setup or
+integration workflow, or when the owner asks about updates or behavior that may
+have changed. Routine item turns do not need a check on every message.

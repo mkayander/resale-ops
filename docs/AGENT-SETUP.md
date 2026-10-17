@@ -30,6 +30,9 @@ Source commit recorded at setup: <commit SHA>
 At the start of each new chat, check whether the GitHub source has changed since
 the recorded source commit. If it changed, use the newly read skill and offer a
 replacement for these project instructions; do not silently replace a pinned snapshot.
+In a long-lived chat, repeat this check after a long pause, before a new setup or
+integration workflow, or when I ask about updates or behavior that may have changed.
+Do not perform the check on every routine item message.
 
 Google Drive stores photos and listing materials. Google Sheets stores the queue.
 Resale folder: <verified URL and ID>
