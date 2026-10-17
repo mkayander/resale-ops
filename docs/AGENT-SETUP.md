@@ -12,8 +12,8 @@ Set up Resale Ops for the current user in a web ChatGPT Project. Follow these st
    `id, status, title, city, list_price_rub, quick_sale_rub, metadata_status, post_photo_count, prepared_at, updated_at, folder_name, folder_url, notes`
 
 5. Write the actual IDs and URLs to `Resale/.resale-locations.json`, read them back, and never put these private values in the public repository.
-6. If Resale Ops instructions are not already saved in the project instructions, say so and provide one complete copyable block. Use the actual links and IDs from step 5, the `Queue` tab, the user's city, and the platforms they chose (default: Avito and Youla). Ask the user to paste the block into Project Instructions and confirm that it was saved; do not call setup complete until they confirm.
-7. If the city is unknown, ask only for the city. After the answer, show the final block again without placeholders.
+6. Determine whether Resale Ops instructions are already saved in Project Instructions. If the host cannot expose the project instructions, ask the user to confirm or paste the current block; do not assume that it is absent.
+7. If the city is unknown, ask only for the city. After the answer, if the block is missing or outdated, provide one complete copyable block using the actual links and IDs from step 5, the `Queue` tab, the city, and the chosen platforms (default: Avito and Youla). Ask the user to paste it into Project Instructions and confirm that it was saved; do not call setup complete until they confirm.
 8. After the instructions are saved, ask whether the user wants to create the first item now. Only after the user names the item or explicitly confirms should you create a unique item folder with `inbox` and `photos/post`, then `listing.md` and `meta.json`. Show the `inbox` link for photo upload.
 
 ## Project instructions block
