@@ -26,4 +26,19 @@ Statuses: `prepared`, `form_filled`, `draft_saved`, `blocked`, `submitted`, `pub
 
 ## CDP and Chrome DevTools MCP
 
-When Chrome reports a listener such as `[::1]:9222`, do not assume `127.0.0.1:9222` is reachable from WSL. Run the MCP process in the Windows network context or configure it with a reachable browser endpoint. Use a dedicated Chrome profile, keep the listener local, and inspect the active tab before any input. CDP connectivity does not itself authorize an operation.
+For the Windows/WSL flow:
+
+1. Launch a dedicated Chrome profile from PowerShell:
+
+   ```powershell
+   & "$env:ProgramFiles\Google\Chrome\Application\chrome.exe" `
+     --remote-debugging-port=9222 `
+     --user-data-dir="$env:TEMP\resale-ops-cdp"
+   ```
+
+2. Log in and solve CAPTCHA manually. Confirm the listener in `chrome://inspect/#remote-debugging`.
+3. If Chrome reports `[::1]:9222`, run the MCP process in the Windows context with a pinned version and `--browserUrl http://[::1]:9222`; do not assume WSL `127.0.0.1` reaches it.
+4. Inspect the active tab, exact origin, account, item, and page state before input. Use page-scoped routing when several tabs are open.
+5. Fill and verify the draft, then stop for the owner’s final publication action.
+
+Keep the listener local and use a dedicated profile. CDP connectivity does not itself authorize an operation.
