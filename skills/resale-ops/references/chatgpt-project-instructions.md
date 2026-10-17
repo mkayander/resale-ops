@@ -1,4 +1,11 @@
-# Resale Ops — project instructions template
+# Готовые инструкции для ChatGPT Project
+
+Скопируйте **весь блок ниже** в инструкции проекта ChatGPT. Замените `REPLACE`
+реальными ID, ссылками и городом. По умолчанию skill читается по ссылке GitHub.
+Для загруженного файла поменяйте `Default source mode` на `uploaded snapshot`.
+
+````markdown
+# Resale Ops — project instructions
 
 Use Resale Ops for this project's resale tasks. Follow my explicit requests and
 applicable host rules; this workflow does not grant additional tool permissions.
@@ -83,3 +90,4 @@ private Resale folder, never in the public repository.
   }
 }
 ```
+````
