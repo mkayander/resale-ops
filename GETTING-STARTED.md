@@ -2,6 +2,10 @@
 
 Одна инструкция: настройка ChatGPT Project → Google Drive + Google Sheets →
 фото вещи → оценка и текст → ручное размещение на Авито и Юле.
+Страница skill: [Resale Ops на skills.sh](https://skills.sh/mkayander/resale-ops/resale-ops).
+Исходный workflow и supporting references находятся в GitHub; ссылка на них
+включена в шаблон ниже.
+
 Все шаблоны для копирования находятся прямо здесь. Для ChatGPT Project не нужны
 локальная установка skill, терминал, Node.js или Python на вашем ПК.
 
@@ -38,7 +42,8 @@ Drive и чтения/изменения строк Sheets. Сам Resale Ops н
 Используй Resale Ops для задач продажи вещей в этом проекте.
 
 ИСТОЧНИК WORKFLOW
-Режим: ссылка GitHub.
+Страница skill: https://skills.sh/mkayander/resale-ops/resale-ops
+Режим: ссылка GitHub. Для чтения полного workflow используй исходники ниже.
 Перед работой с продажей в каждом новом чате прочитай содержимое:
 https://github.com/mkayander/resale-ops/blob/main/skills/resale-ops/SKILL.md
 Прочитай также необходимые справочные файлы по относительным ссылкам skill:
@@ -223,7 +228,7 @@ python scripts/build_project_context.py --output /chosen/path/resale-ops-project
 ```
 
 Загрузите результат в проект. В скопированном блоке инструкций замените строку
-`Режим: ссылка GitHub.` на `Режим: загруженный снимок.` Затем повторите проверку
+строку режима на `Режим: загруженный снимок.` Затем повторите проверку
 из шага 4, попросив читать загруженный файл. ZIP или один SKILL.md без references
 не заменяют доступный полный workflow. Не оставляйте конфликтующие снимки.
 
