@@ -2,6 +2,10 @@
 
 Replace `REPLACE` values, then save in ChatGPT project instructions, Cursor rules, Claude `CLAUDE.md`, etc.
 
+For a ChatGPT Project, use the [complete instructions template](chatgpt-project-instructions.md),
+which also covers workflow files, updates, permissions and missing-tool handling.
+The compact JSON below remains suitable for other host rules.
+
 ## JSON block
 
 ```json

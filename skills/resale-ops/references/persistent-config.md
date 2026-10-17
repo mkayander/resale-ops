@@ -40,3 +40,14 @@ This is **not** required for the portable skill in ChatGPT/Cursor cloud chat.
 - Sheet: `https://docs.google.com/spreadsheets/d/SPREADSHEET_ID/edit`
 
 Set `defaults.city` and `defaults.language` for your usual listings.
+
+## ChatGPT Project workflow snapshot
+
+Use the full [ChatGPT project instructions template](chatgpt-project-instructions.md)
+with actual Drive/Sheets IDs. Upload SKILL.md and all references as project files,
+or a consolidated readable snapshot containing them. A skills.sh link is a
+discovery source, not an installed skill or guaranteed per-chat fetch. Keep the
+uploaded snapshot stable until the owner requests an update. Verify the workflow
+file and actual cloud capabilities in a fresh project chat; never equate IDs with
+access, a Drive search connection with write tools, or instructions with photo
+processing capability. Missing tools must be reported without claiming success.
