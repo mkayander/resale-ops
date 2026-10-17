@@ -31,6 +31,19 @@ Spreadsheet **Queue** tab = dashboard (`status`, prices, `folder_url`). Full cop
 4. **Research & copy** — update `listing.md` and `meta.json`; set `status` (`draft` → `researching` → `ready`).
 5. **Index** — upsert a row on the **Queue** sheet via Sheets MCP (or append/update by `id`). Do not require `queue-index.csv` on disk.
 6. **Handoff** — PC posting uses cloud `photos/post/` (web Drive or sync). List file names and folder link; no marketplace automation in `prepare_only`.
+7. **Reconcile** — after handoff or later changes, follow the state reconciliation below before reporting completion.
+
+## Reconcile state after handoff or changes
+
+For an existing queue item, preparation and subsequent changes are complete only when the saved records agree with the known outcome. An owner report is sufficient to record a change with owner-reported provenance; it does not authorize account access to verify it.
+
+- Read the current `meta.json`, current listing document, and Queue row matched by stable item ID. Reuse their existing file IDs, schema, columns, and links; if a newer draft is already designated current, update it rather than an older `listing.md` or a new competing copy.
+- Reconcile the affected fields across all three: platform-specific status and listing URL/ID, selected price, agreed pickup/delivery terms and discounts, and actual uploaded photo filenames/order/count. Preserve unrelated fields and other platforms' statuses. Keep prepared photo inventory separate from uploaded photos; five available files do not prove five uploads.
+- Preserve evidence provenance and known observation time. Submission awaiting moderation is `submitted`, not `published`; failed or ambiguous actions do not advance status. Use the existing queue's status vocabulary (for example `posted` for a known publication), and retain per-platform evidence in metadata and the row's notes when dedicated columns are absent.
+- Write the affected records in place, then read back each one and compare the changed fields. Only then report both the action result and successful persistence. Do not claim the Queue is current from a Drive write alone.
+- If a connector is unavailable, a write fails, or readback disagrees, report which records remain unsynced and the exact change still needed. On continuation, reconcile from the known outcome; never repeat a marketplace submission to repair tracking. A successful marketplace action remains successful even when persistence fails.
+
+Cloud reconciliation changes tracking only; it does not authorize marketplace access or expand an adapter's permitted operations.
 
 ## Optional: local sync + scripts
 

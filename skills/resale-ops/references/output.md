@@ -14,5 +14,6 @@ Present compactly in the conversation language selected by `SKILL.md`:
 10. **Account** — in `prepare_only`, state that the owner’s marketplace account was not opened or changed (public web research may still have occurred). For admitted methods, report observed fields/errors without personal data.
 11. **Status** — `prepared | form_filled | draft_saved | blocked | submitted | published`, with evidence source. Manual work ends at `prepared`; label later owner-reported status as such.
 12. **Next step** — make the stop before publication explicit.
+13. **Saved state** — for queue items, report whether the current listing document, `meta.json`, and Queue row were updated and read back; identify unsynced records explicitly. Follow [state reconciliation](persistence.md#reconcile-state-after-handoff-or-changes) after later changes as well.
 
 Exclude exact address/phone, cookies, tokens, and unrelated-tab content. Keep personal work files in the owner-selected private storage (Google Drive + Google Sheets by default) and outside public repositories.

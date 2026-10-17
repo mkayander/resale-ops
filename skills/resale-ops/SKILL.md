@@ -84,4 +84,6 @@ Show final fields, price, platform, city, terms, photos, evidence sources (inclu
 
 With an admitted adapter, stop before publication. One authorized action is allowed only after explicit approval of the unchanged final version. Distinguish moderation submission from public publication and claim neither without evidence. For Avito and Youla, even “publish” must currently end with a human handoff.
 
+For an item in a saved queue, completion includes [state reconciliation](references/persistence.md#reconcile-state-after-handoff-or-changes). After preparation, an owner-reported marketplace action, or an action through an admitted method, update the current listing document, `meta.json`, and Queue row by item ID, then read them back before reporting completion. Apply this to later price, copy, photo, and status changes too. If a write or verification fails, report the marketplace result and the unsynced records separately; retry persistence only, never publication.
+
 See [behavior examples](references/examples.md).

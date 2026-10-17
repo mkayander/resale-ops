@@ -40,6 +40,10 @@ If the owner reports the chair is live or pending, do not prepare a second creat
 
 Locations live in project rules and/or `Resale/.resale-locations.json`—no local disk. Owner uploads to cloud `inbox/`. Agent creates folders via MCP, sanitizes into `photos/post/`, writes `listing.md` + `meta.json`, updates Queue sheet. PC posts from cloud `photos/post/`.
 
+## State after manual publication and a photo edit
+
+An existing cloud item has five prepared photos. The owner reports publishing on one platform with three photos and supplies its URL, then reports adding a fourth photo and changing the price. Read the current records, update that platform's status with owner-reported provenance, URL, price, terms, and four uploaded filenames/count in metadata, the current listing document, and the same Queue row. Keep the five-file prepared inventory and the other platform's unposted state intact. Read back all three records before saying tracking is current. If Sheets fails after Drive succeeds, report Sheets as unsynced and repair that row on continuation without creating or republishing a listing.
+
 ## Reference product image
 
 User photos show a partial logo. Agent finds the manufacturer product page, records dimensions and main pros as `web_public`, and suggests one official gallery URL as a **reference image** for the owner to compare—not as a substitute listing photo unless they download and own the right to use it.
