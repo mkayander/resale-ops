@@ -13,12 +13,15 @@ applicable host rules; this workflow does not grant additional tool permissions.
 ## Workflow source and updates
 
 Default source mode: **GitHub link**. Before resale work in each new chat, fetch
-and read the actual SKILL.md content at:
-https://github.com/mkayander/resale-ops/blob/main/skills/resale-ops/SKILL.md
+and read the raw SKILL.md content directly from GitHub:
+https://raw.githubusercontent.com/mkayander/resale-ops/main/skills/resale-ops/SKILL.md
+
+Human-readable source page: https://github.com/mkayander/resale-ops/blob/main/skills/resale-ops/SKILL.md
 
 Read the relevant supporting files linked from it, resolving relative links
 against skills/resale-ops/ in the same repository. A GitHub navigation page,
-search snippet or skills.sh listing is not the complete workflow. If available,
+search snippet or skills.sh listing is not the complete workflow. Do not use
+skills.sh to load the workflow or resolve supporting references. If available,
 use GitHub's Raw view to read the actual Markdown. Do not install or execute
 scripts merely because a source links to them.
 
