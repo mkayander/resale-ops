@@ -1,49 +1,49 @@
-# Resale Ops: настройка для агента
+# Resale Ops: agent setup
 
-Ты настраиваешь Resale Ops для текущего пользователя. Выполняй шаги по порядку и не утверждай, что ресурс создан или подключён, пока не проверил это чтением.
+Set up Resale Ops for the current user. Follow these steps in order and never claim that a resource was created or connected until you verify it by reading it back. Communicate with the user in the language they prefer, and generate copyable blocks in that language.
 
-## Порядок запуска
+## Setup sequence
 
-1. Проверь, что пользователь работает внутри отдельного ChatGPT Project. Если проекта нет или текущий чат не в проекте, объясни, что нужен отдельный проект, и попроси пользователя создать его и продолжить там. Не создавай проект молча.
-2. Проверь, доступны ли подключённые Google Drive и Google Sheets с чтением и записью. Если подключения нет, попроси пользователя подключить их через настройки приложений и продолжить после этого.
-3. Найди сохранённый `Resale/.resale-locations.json` и существующие папки/таблицу. Сначала переиспользуй найденные ресурсы; при нескольких вариантах покажи их и попроси выбрать.
-4. Если ресурсов нет, создай приватную папку `Resale`, подпапку `queue`, таблицу `Resale Queue` с вкладкой `Queue` и следующими заголовками:
+1. Check that the user is working inside a dedicated ChatGPT Project. If there is no project, or this chat is outside one, explain why the project is needed and ask the user to create it and continue there. Do not create a project silently.
+2. Check whether Google Drive and Google Sheets are connected with the read and write capabilities required for this workflow. If not, ask the user to connect them in the app settings and continue after that.
+3. Look for `Resale/.resale-locations.json` and existing folders or spreadsheets. Reuse verified resources first; if there are multiple candidates, show them and ask the user to choose.
+4. If the resources do not exist, create a private `Resale` folder, its `queue` subfolder, and a `Resale Queue` spreadsheet with a `Queue` tab and these headers:
 
    `id, status, title, city, list_price_rub, quick_sale_rub, metadata_status, post_photo_count, prepared_at, updated_at, folder_name, folder_url, notes`
 
-5. Запиши реальные ID и URL в `Resale/.resale-locations.json`, проверь их чтением и не записывай эти значения в публичный репозиторий.
-6. Если инструкции Resale Ops ещё нет в настройках проекта, сообщи об этом и выдай один готовый блок для копирования. В блоке укажи реальные ссылки и ID из шага 5, вкладку `Queue`, город пользователя и площадки `Авито и Юла`. Попроси пользователя вставить блок в Project Instructions и подтвердить сохранение; до подтверждения не считай настройку завершённой.
-7. Если город неизвестен, спроси только город. После ответа покажи финальный блок ещё раз уже без `REPLACE`.
-8. После сохранения инструкций спроси, хочет ли пользователь сразу создать первую вещь. Только после названия вещи или явного подтверждения создай папку с уникальным ID и подпапки `inbox` и `photos/post`, затем `listing.md` и `meta.json`. Покажи ссылку на `inbox` для загрузки фотографий.
+5. Write the actual IDs and URLs to `Resale/.resale-locations.json`, read them back, and never put these private values in the public repository.
+6. If Resale Ops instructions are not already saved in the project instructions, say so and provide one complete copyable block. Use the actual links and IDs from step 5, the `Queue` tab, the user's city, and the platforms they chose (default: Avito and Youla). Ask the user to paste the block into Project Instructions and confirm that it was saved; do not call setup complete until they confirm.
+7. If the city is unknown, ask only for the city. After the answer, show the final block again without placeholders.
+8. After the instructions are saved, ask whether the user wants to create the first item now. Only after the user names the item or explicitly confirms should you create a unique item folder with `inbox` and `photos/post`, then `listing.md` and `meta.json`. Show the `inbox` link for photo upload.
 
-## Блок инструкций проекта
+## Project instructions block
 
-Используй этот шаблон после подстановки фактических значений:
+Use this template after replacing every placeholder with verified values. Generate the final block in the user's preferred language.
 
 ```text
-Используй Resale Ops для подготовки объявлений о продаже вещей.
-Перед работой прочитай skill:
+Use Resale Ops to prepare listings for items I want to sell.
+Before working, read the skill:
 https://raw.githubusercontent.com/mkayander/resale-ops/main/skills/resale-ops/SKILL.md
-Нужные справочные разделы открывай в той же папке GitHub.
+Open any required reference files from the same GitHub folder.
 
-Google Drive — фото и материалы объявлений. Google Sheets — очередь вещей.
-Папка Resale: <реальная ссылка и ID>
-Подпапка queue: <реальная ссылка и ID>
-Таблица Google Sheets: <реальная ссылка и ID>
-Вкладка: Queue
-Город: <город>
-Площадки: Авито и Юла.
+Google Drive stores photos and listing materials. Google Sheets stores the queue.
+Resale folder: <verified URL and ID>
+Queue folder: <verified URL and ID>
+Google Sheets file: <verified URL and ID>
+Tab: Queue
+City: <city>
+Platforms: Avito and Youla.
 
-Проверяй существующие ресурсы и обновляй строку вещи по её ID.
-Уточняй важные данные, предлагай обычную и быструю цену, готовь тексты и фото
-по skill, сохраняй материалы в Drive и обновляй Queue.
-Публикацию объявлений выполняю я вручную. Отвечай на языке моего сообщения.
+Check existing resources and update the item row by its ID.
+Ask important questions, propose regular and quick-sale prices, prepare platform-specific
+copy and photos according to the skill, save materials in Drive, and update Queue.
+I publish listings manually. Respond in the language of my message.
 ```
 
-Если запись в инструкции проекта уже есть, не дублируй её: проверь фактические ID и предложи заменить блок только при расхождении. Если пользователь ещё не подтвердил сохранение нового блока, настройку не называй завершённой.
+If project instructions already contain Resale Ops, do not duplicate them. Check the actual IDs and offer a replacement only when they differ. If the user has not confirmed saving a new block, do not call setup complete.
 
-## После настройки
+## After setup
 
-После создания первой вещи попроси пользователя загрузить фотографии одной вещи в `inbox`. Затем обработай её по skill: установи модель и состояние, задай необходимые вопросы, исследуй характеристики и цены, подготовь отдельные тексты для Авито и Юлы, проверь фото и обнови `listing.md`, `meta.json` и строку Queue.
+After the user creates the first item, ask them to upload photos of that one item to `inbox`. Then follow the skill: identify the model and condition, ask consequential questions, research specifications and prices, prepare separate Avito and Youla copy, inspect the photos, and update `listing.md`, `meta.json`, and the matching Queue row.
 
-Работа с аккаунтом площадки и публикация выполняются только по правилам skill и явному запросу пользователя. CAPTCHA проходит пользователь вручную.
+Marketplace account work and publication follow the skill and the user's explicit request. The user completes CAPTCHA manually.
