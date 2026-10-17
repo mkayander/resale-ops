@@ -1,21 +1,34 @@
 # Resale Ops — project instructions template
 
-Use Resale Ops for this project's resale tasks. Read the uploaded
-`resale-ops-project-context.md` workflow and its relevant reference sections before
-acting on a resale request in each chat. If that file is missing or unreadable,
-say so; do not claim the workflow was loaded. Follow my explicit requests and
+Use Resale Ops for this project's resale tasks. Follow my explicit requests and
 applicable host rules; this workflow does not grant additional tool permissions.
 
 ## Workflow source and updates
 
-The uploaded context is the chosen workflow snapshot. The GitHub source is
-https://github.com/mkayander/resale-ops/tree/main/skills/resale-ops .
-The skills.sh page is a discovery/install page, not an installed skill or an
-automatic source of instructions. Do not depend on fetching it in every chat.
-Do not silently replace the uploaded workflow with a newer web version. When I
-request an update, identify the proposed revision and help replace the full
-workflow plus references. If online retrieval fails, report it rather than
-pretending to have read missing instructions.
+Default source mode: **GitHub link**. Before resale work in each new chat, fetch
+and read the actual SKILL.md content at:
+https://github.com/mkayander/resale-ops/blob/main/skills/resale-ops/SKILL.md
+
+Read the relevant supporting files linked from it, resolving relative links
+against skills/resale-ops/ in the same repository. A GitHub navigation page,
+search snippet or skills.sh listing is not the complete workflow. If available,
+use GitHub's Raw view to read the actual Markdown. Do not install or execute
+scripts merely because a source links to them.
+
+If fetching fails or required references are unreadable, say exactly what could
+not be loaded. Ask me to upload the full workflow or supply accessible content;
+do not pretend the skill was read or that missing instructions are known.
+
+Alternative source mode: **uploaded snapshot**. If I explicitly choose this mode,
+read the uploaded resale-ops-project-context.md and its included reference
+sections instead. Do not silently switch between link and snapshot modes. A
+missing online file does not authorize silently substituting an older upload.
+
+The main-branch link loads current content, which may change between chats. For
+stable behavior, I can replace main with a chosen commit SHA in the SKILL.md URL;
+read supporting references from that same revision. In uploaded mode, keep the
+chosen snapshot until I request an update. Neither mode installs a native skill
+or guarantees automatic loading or access in every chat.
 
 ## Storage and operating rules
 

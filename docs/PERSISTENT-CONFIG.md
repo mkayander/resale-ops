@@ -15,5 +15,7 @@ Cursor template: [templates/cursor-rules/resale-ops.mdc](../templates/cursor-rul
 
 Use the [project setup guide](CHATGPT-PROJECT.md) and the complete
 [project instructions template](../skills/resale-ops/references/chatgpt-project-instructions.md).
-Upload the workflow and all references as project sources; a skills.sh link alone
-is not an installation. Connections and write capabilities must be checked separately.
+Choose GitHub-link mode (fetch SKILL.md and relevant references in each new chat)
+or upload a complete workflow snapshot. A skills.sh link alone is not an
+installation; failed retrieval must be reported. Connections and write capabilities
+must be checked separately.

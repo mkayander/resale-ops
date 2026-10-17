@@ -44,10 +44,13 @@ Set `defaults.city` and `defaults.language` for your usual listings.
 ## ChatGPT Project workflow snapshot
 
 Use the full [ChatGPT project instructions template](chatgpt-project-instructions.md)
-with actual Drive/Sheets IDs. Upload SKILL.md and all references as project files,
-or a consolidated readable snapshot containing them. A skills.sh link is a
-discovery source, not an installed skill or guaranteed per-chat fetch. Keep the
-uploaded snapshot stable until the owner requests an update. Verify the workflow
+with actual Drive/Sheets IDs. Choose GitHub-link mode to fetch SKILL.md and relevant references in each new
+chat, or upload all files / a consolidated readable snapshot. Report failed
+retrieval; never claim missing files were read or silently substitute an older
+upload. A skills.sh link is a discovery source, not an installed skill or
+guaranteed per-chat fetch. A main-branch URL may change between chats; use the
+same commit SHA for the skill and references when the owner wants a fixed version.
+Keep uploaded snapshots stable until the owner requests an update. Verify the workflow
 file and actual cloud capabilities in a fresh project chat; never equate IDs with
 access, a Drive search connection with write tools, or instructions with photo
 processing capability. Missing tools must be reported without claiming success.

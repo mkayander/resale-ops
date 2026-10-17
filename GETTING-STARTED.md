@@ -5,8 +5,9 @@
 
 ## Используете ChatGPT Project?
 
-Начните с [настройки проекта ChatGPT](docs/CHATGPT-PROJECT.md): загрузите полный
-workflow, вставьте готовые инструкции с ID Drive/Sheets и проверьте подключения.
+Начните с [настройки проекта ChatGPT](docs/CHATGPT-PROJECT.md): используйте ссылку
+на skill в GitHub или загрузите полный workflow, вставьте готовые инструкции
+с ID Drive/Sheets и проверьте подключения.
 Для этого пути локальная установка через `npx` не требуется. Дальнейшие шаги
 установки ниже относятся к Codex, Claude Code и Cursor.
 
