@@ -5,5 +5,14 @@
   "repository": "https://github.com/mkayander/resale-ops",
   "description": "Prepare evidence-based resale listings for manual posting; automate only through separately verified marketplace-authorized methods.",
   "license": "MIT",
-  "keywords": ["marketplaces", "classifieds", "resale", "browser", "russian"]
+  "keywords": [
+    "marketplaces",
+    "classifieds",
+    "resale",
+    "browser",
+    "russian"
+  ],
+  "author": {
+    "name": "Max Kayander"
+  }
 }

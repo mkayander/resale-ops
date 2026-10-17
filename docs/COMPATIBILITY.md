@@ -14,7 +14,7 @@ OpenAI документирует этот формат для ChatGPT/Codex и 
 
 Cursor поддерживает Agent Plugins и собственные плагины; официальный marketplace требует рассмотрения, team marketplace — отдельная возможность. [Plugins](https://cursor.com/docs/plugins). Для простого копирования используйте `.cursor/skills` / `~/.cursor/skills`. [Skills](https://cursor.com/docs/skills).
 
-Claude Code поддерживает `.claude/skills` / `~/.claude/skills`, а плагины используют собственный манифест. [Skills](https://code.claude.com/docs/en/skills). В проект добавлена такая оболочка; она использует ту же папку skills. Каталоги Claude Code распространяют плагины через marketplace. [Создание marketplace](https://code.claude.com/docs/en/plugin-marketplaces).
+Claude Code поддерживает `.claude/skills` / `~/.claude/skills`, а плагины используют собственный манифест. [Skills](https://code.claude.com/docs/en/skills). В проект добавлена такая оболочка; она использует ту же папку skills. Каталоги Claude Code распространяют плагины через marketplace. В этом репозитории добавлен собственный каталог `mkayander-plugins` с записью `resale-ops` (`.claude-plugin/marketplace.json`); команды — в [установке](INSTALL.md). Это не размещение в официальном каталоге Anthropic. [Создание marketplace](https://code.claude.com/docs/en/plugin-marketplaces).
 
 ## Общая дистрибуция
 

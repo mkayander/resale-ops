@@ -1,0 +1,14 @@
+{
+  "name": "mkayander-plugins",
+  "owner": {
+    "name": "Max Kayander"
+  },
+  "plugins": [
+    {
+      "name": "resale-ops",
+      "source": "./",
+      "description": "Prepare used-item listings from photos and public price evidence for manual posting."
+    }
+  ],
+  "description": "Independent resale tools by Max Kayander."
+}

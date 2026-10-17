@@ -19,6 +19,8 @@ document unless asked to translate it.
   subtree so standalone installation works.
 - `plugin.json`: portable Agent Plugins manifest.
 - `.claude-plugin/plugin.json`: Claude wrapper for the same skill.
+- `.claude-plugin/marketplace.json`: self-hosted `mkayander-plugins` catalog;
+  the `resale-ops` entry points to this repository root. Keep both names stable.
 - `scripts/install.py`: copies the complete skill without overwriting an existing
   installation or changing client configuration.
 - `scripts/resale_queue/` and `scripts/resale_queue.py`: optional local photo
