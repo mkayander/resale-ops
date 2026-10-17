@@ -10,9 +10,8 @@ Google Drive stores files and Google Sheets stores the Queue dashboard. Other pr
 Resale/
   .resale-locations.json    ← IDs + defaults (see locations.md)
   queue/<item-id>/
-    inbox/                  ← owner uploads from phone
-    photos/original/          ← optional archive after sanitization
-    photos/post/              ← posting copies only
+    inbox/                  ← temporary upload staging; clear after successful processing
+    photos/post/              ← sole persistent photo copies (sanitized/compressed)
     listing.md
     meta.json
 ```
@@ -22,11 +21,13 @@ Spreadsheet **Queue** tab = dashboard (`status`, prices, `folder_url`). Full cop
 ## Agent responsibilities (cloud / MCP)
 
 1. **Load locations** per [locations.md](locations.md) before creating items.
-2. **`init` item** — create `queue/<item-id>/` and subfolders via cloud MCP; write starter `meta.json` and `listing.md` as cloud files.
+2. **`init` item** — create `queue/<item-id>/` with temporary `inbox/` and permanent `photos/post/` via cloud MCP; write starter `meta.json` and `listing.md` as cloud files. Do not create `photos/original/`.
 3. **Photos** — after owner uploads to `inbox/`:
    - Download inbox files to a **temporary workspace** when needed.
    - Run sanitization/compression (`scripts/resale_queue.py prepare-photos` on that temp tree, or equivalent Pillow steps: strip EXIF, resize, JPEG).
-   - Upload results to `photos/post/`; move or archive originals to `photos/original/` in cloud if policy requires.
+   - Upload selected results to `photos/post/` and verify that each expected file exists and is usable.
+   - **Space-saving default:** delete originals from `inbox/` only after corresponding sanitized posting copies are successfully verified. Keep `inbox/` empty between runs. Do not retain `photos/original/` or second photo copies in Drive. If sanitization/upload fails, keep staging inputs until resolved; do not delete the sole existing copy.
+   - Photos supplied in chat should be processed from the temporary workspace and uploaded directly to `photos/post/` without uploading originals to Drive.
    - Set `meta.json` `photos.metadata_status` to `stripped_verified` only after sanitization actually ran.
 4. **Research & copy** — update `listing.md` and `meta.json`; set `status` (`draft` → `researching` → `ready`).
 5. **Index** — upsert a row on the **Queue** sheet via Sheets MCP (or append/update by `id`). Do not require `queue-index.csv` on disk.
@@ -63,5 +64,6 @@ Owners with **Google Drive for desktop** (or similar) may set `local.resale_root
 - Cloud persistence does **not** authorize marketplace login, form fill, or upload.
 - No passwords, 2FA, or marketplace cookies in `meta.json` or sheets.
 - Reference image URLs in `listing.md` unless owner saved licensed copies to `photos/post/`.
+- Apply single-copy photo storage to all new items: keep no Drive original/archive copies by default.
 
 Google recipe: [drive-sheets-queue.md](drive-sheets-queue.md).
