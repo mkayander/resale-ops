@@ -54,3 +54,10 @@ Keep uploaded snapshots stable until the owner requests an update. Verify the wo
 file and actual cloud capabilities in a fresh project chat; never equate IDs with
 access, a Drive search connection with write tools, or instructions with photo
 processing capability. Missing tools must be reported without claiming success.
+
+For a mutable `main` link, record the last-read commit in the project instructions
+or private cloud config. At the start of a new chat, compare it with the current
+`main` commit when GitHub metadata is available. If it differs, read the current
+skill and references, summarize relevant behavior changes, and offer to refresh the
+project instructions or uploaded snapshot. If the comparison cannot be performed,
+report that limitation instead of claiming the source is up to date.
