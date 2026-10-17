@@ -15,4 +15,4 @@ Present compactly in the conversation language selected by `SKILL.md`:
 11. **Status** — `prepared | form_filled | draft_saved | blocked | submitted | published`, with evidence source. Manual work ends at `prepared`; label later owner-reported status as such.
 12. **Next step** — make the stop before publication explicit.
 
-Exclude exact address/phone, cookies, tokens, and unrelated-tab content. Keep personal work files local and outside public repositories.
+Exclude exact address/phone, cookies, tokens, and unrelated-tab content. Keep personal work files in the owner-selected private storage (Google Drive + Google Sheets by default) and outside public repositories.

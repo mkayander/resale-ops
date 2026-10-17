@@ -12,6 +12,8 @@ Before account-linked marketplace access, read [account safety](references/accou
 
 Use the language the user starts the conversation with for all user-facing output, overridden by any explicit language request; default to Russian only when the starting language is unclear. Lack of marketplace access must not delay useful local output.
 
+Default storage is **Google Drive + Google Sheets**: Drive holds photos, listing drafts and item metadata; Sheets is the Queue dashboard. Reuse saved locations and existing resources; if multiple candidates exist, clarify before writing. Check actual file/photo and spreadsheet read/write capabilities before setup. The skill does not install or authenticate connectors. If capabilities are missing, explain the setup dependency, keep useful preparation in chat, and never claim cloud updates succeeded. Use another provider or local-only mode only when the owner chooses it.
+
 For **phone → PC**, use **cloud** [persistence](references/persistence.md): queue folders and files via cloud MCP; load IDs from [locations](references/locations.md) (project rules/memory first, then `Resale/.resale-locations.json`). Spreadsheet index via Sheets MCP. Local sync and `scripts/resale_queue.py` are optional only. Setup: [persistent-config](references/persistent-config.md).
 
 ## Hard boundaries

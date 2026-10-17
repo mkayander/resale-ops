@@ -1,8 +1,8 @@
 # Persistence: cloud queue (default)
 
-The skill targets **phone → agent → PC** with **no dependency on a local `Resale/` path**. State lives in **cloud storage** (and optional spreadsheet), loaded via MCP and/or [project memory](persistent-config.md).
+The skill targets **phone → agent → PC** with **no dependency on a local `Resale/` path**. State lives in **Google Drive and Google Sheets by default**, loaded via MCP and/or [project memory](persistent-config.md).
 
-Provider-agnostic in principle; Google Drive + Sheets MCP is the documented reference. iCloud/Dropbox/OneDrive work the same if the host exposes folder/file APIs or the owner uses that provider’s app for `inbox/` uploads.
+Google Drive stores files and Google Sheets stores the Queue dashboard. Other providers and local-only storage are explicit owner-selected alternatives. Check actual connector read/write capabilities; do not require local sync, a service account or a persistent PC path for the default workflow. If cloud tools are missing, explain the dependency and prepare in chat without claiming persistence.
 
 ## Canonical layout (in cloud)
 
