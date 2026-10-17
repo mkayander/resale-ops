@@ -32,7 +32,7 @@ For **phone → PC**, use **cloud** [persistence](references/persistence.md): qu
 
 Load owner [locations](references/locations.md): **project rules/memory first**, then cloud `Resale/.resale-locations.json` via MCP if needed; local JSON paths only when present—never require disk access. Apply `defaults` only when the user did not specify city/language/platforms.
 
-Read the platform registry and record `prepare_only` or a named, previously admitted adapter for each platform. In `prepare_only`, do not connect marketplace MCP, use the owner’s account, or automate forms/upload. Anonymous public research via search or unauthenticated page views is permitted per [account safety](references/account-safety.md).
+Read the platform registry and record `prepare_only` or a named, previously admitted adapter for each platform. Without an explicit owner request and a named, admitted method, do not connect marketplace MCP, use the owner’s account, or automate forms/upload. Anonymous public research via search or unauthenticated page views is permitted per [account safety](references/account-safety.md).
 
 Use the cloud [persistence](references/persistence.md) queue when selling across sessions: MCP for folders/files/sheet rows; sanitize photos before posting-ready; do not depend on `RESALE_ROOT` unless the owner explicitly uses local sync scripts.
 
