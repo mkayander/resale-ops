@@ -17,11 +17,11 @@ Use [project-memory-snippet.md](project-memory-snippet.md) as a fill-in template
 
 Add one line of behavior:
 
-> When I mention resale or selling an item, follow the **resale-ops** skill. Load `resale-locations` from these instructions (or Drive `Resale/.resale-locations.json` if MCP is connected). Do not ask for folder IDs again unless missing.
+> When I mention resale or selling an item, follow the **resale-ops** skill. Load `resale-locations` from these instructions (or the private `.resale-locations.json` file inside the `Resale` Drive folder if MCP is connected). Do not ask for folder IDs again unless missing.
 
 ## Also store in cloud (phone + fresh chats)
 
-Upload the **same JSON** as `Resale/.resale-locations.json` in your cloud folder. Agents with **Google Drive MCP** read it even when project rules are empty.
+Upload the **same JSON** as the private `.resale-locations.json` file inside the `Resale` folder in Drive. Agents with **Google Drive MCP** read it even when project rules are empty.
 
 No desktop sync required. The owner uploads photos with the **Drive mobile app** (or equivalent) into `queue/<item-id>/inbox/`.
 

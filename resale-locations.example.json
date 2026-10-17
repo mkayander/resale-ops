@@ -19,5 +19,5 @@
     "platforms": ["avito", "youla"],
     "language": ""
   },
-  "notes": "Preferred: paste this JSON into ChatGPT/Cursor/Claude project instructions (see skills/resale-ops/references/project-memory-snippet.md) AND save as Resale/.resale-locations.json in cloud. Local file copy is optional."
+  "notes": "Preferred: paste this JSON into ChatGPT/Cursor/Claude project instructions (see skills/resale-ops/references/project-memory-snippet.md) AND save it as the private .resale-locations.json file inside the Resale folder in cloud storage. Local file copy is optional."
 }

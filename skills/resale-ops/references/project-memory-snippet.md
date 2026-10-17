@@ -34,4 +34,4 @@ The compact JSON below remains suitable for other host rules.
 
 When selling items: follow resale-ops skill. Use cloud queue under `queue/<item-id>/` (`inbox/`, `photos/post/`, `listing.md`, `meta.json`). Sanitize photos before `status: ready`. Update the Queue sheet row. Do not ask for folder IDs if this JSON is present. No marketplace login unless owner explicitly requests and an admitted adapter exists.
 
-Duplicate this JSON in cloud as `Resale/.resale-locations.json` for MCP-only sessions.
+Duplicate this JSON in cloud as the private `.resale-locations.json` file inside the `Resale` Drive folder for MCP-only sessions.

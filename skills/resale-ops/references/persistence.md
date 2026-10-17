@@ -7,8 +7,8 @@ Google Drive stores files and Google Sheets stores the Queue dashboard. Other pr
 ## Canonical layout (in cloud)
 
 ```text
-Resale/
-  .resale-locations.json    ← IDs + defaults (see locations.md)
+Resale/                     ← Google Drive folder
+  .resale-locations.json    ← private IDs + defaults file (see locations.md)
   queue/<item-id>/
     inbox/                  ← temporary upload staging; clear after successful processing
     photos/post/              ← sole persistent photo copies (sanitized/compressed)

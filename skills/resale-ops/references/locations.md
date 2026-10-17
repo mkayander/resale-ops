@@ -12,7 +12,7 @@ The skill is **global**: it must work without a fixed disk, synced folder, or re
 
 4. **Local files (optional)** — Only if the runtime has a real filesystem and the owner uses offline scripts: `RESALE_LOCATIONS`, `./resale-locations.json`, or `~/.config/resale-ops/locations.json`. **Do not require these** for normal skill operation.
 
-If nothing is found, ask **once**, then tell the owner to add the JSON to **project instructions/rules** and to **`Resale/.resale-locations.json`** per [persistent-config.md](persistent-config.md).
+If nothing is found, ask **once**, then tell the owner to add the JSON to **project instructions/rules** and to the private **`.resale-locations.json` file inside the `Resale` Drive folder** per [persistent-config.md](persistent-config.md).
 
 ## JSON schema (`version`: 1)
 

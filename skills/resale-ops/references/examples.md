@@ -38,7 +38,7 @@ If the owner reports the chair is live or pending, do not prepare a second creat
 
 ## Cross-device queue (phone → PC, cloud)
 
-Locations live in project rules and/or `Resale/.resale-locations.json`—no local disk. Owner uploads to cloud `inbox/`. Agent creates folders via MCP, sanitizes into `photos/post/`, writes `listing.md` + `meta.json`, updates Queue sheet. PC posts from cloud `photos/post/`.
+Locations live in project rules and/or the private `.resale-locations.json` file inside the `Resale` Drive folder—no local disk. Owner uploads to cloud `inbox/`. Agent creates folders via MCP, sanitizes into `photos/post/`, writes `listing.md` + `meta.json`, updates Queue sheet. PC posts from cloud `photos/post/`.
 
 ## State after manual publication and a photo edit
 

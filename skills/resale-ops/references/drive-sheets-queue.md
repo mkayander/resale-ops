@@ -34,8 +34,9 @@ With the owner's setup request:
    `folder_name`, `folder_url`, `notes`.
    Inspect an existing sheet before editing; preserve its rows, formulas and
    extra columns. Match rows by `id`, not title or row number alone.
-4. Save actual returned folder/spreadsheet IDs and URLs in
-   `Resale/.resale-locations.json` using the [locations schema](locations.md).
+4. Save actual returned folder/spreadsheet IDs and URLs in the private
+   `.resale-locations.json` file inside the `Resale` Drive folder, using the
+   [locations schema](locations.md).
    Show the same configuration for the owner to save in project instructions
    using [persistent-config](persistent-config.md). Never invent IDs or save
    placeholder values as a successful configuration.

@@ -6,7 +6,7 @@ alwaysApply: false
 
 # resale-ops (cloud)
 
-Follow the **resale-ops** skill. Load locations from this rule first; if Drive MCP is connected, also read `Resale/.resale-locations.json` (must match).
+Follow the **resale-ops** skill. Load locations from this rule first; if Drive MCP is connected, also read the private `.resale-locations.json` file inside the `Resale` Drive folder (must match).
 
 ## resale-locations
 

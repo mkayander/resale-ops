@@ -14,7 +14,7 @@ Use the language the user starts the conversation with for all user-facing outpu
 
 Default storage is **Google Drive + Google Sheets**: Drive holds photos, listing drafts and item metadata; Sheets is the Queue dashboard. Reuse saved locations and existing resources; if multiple candidates exist, clarify before writing. Check actual file/photo and spreadsheet read/write capabilities before setup. The skill does not install or authenticate connectors. If capabilities are missing, explain the setup dependency, keep useful preparation in chat, and never claim cloud updates succeeded. Use another provider or local-only mode only when the owner chooses it.
 
-For **phone → PC**, use **cloud** [persistence](references/persistence.md): queue folders and files via cloud MCP; load IDs from [locations](references/locations.md) (project rules/memory first, then `Resale/.resale-locations.json`). Spreadsheet index via Sheets MCP. Local sync and `scripts/resale_queue.py` are optional only. Setup: [persistent-config](references/persistent-config.md).
+For **phone → PC**, use **cloud** [persistence](references/persistence.md): queue folders and files via cloud MCP; load IDs from [locations](references/locations.md) (project rules/memory first, then the private `.resale-locations.json` file inside the `Resale` Drive folder). Spreadsheet index via Sheets MCP. Local sync and `scripts/resale_queue.py` are optional only. Setup: [persistent-config](references/persistent-config.md).
 
 ## Hard boundaries
 
@@ -30,7 +30,7 @@ For **phone → PC**, use **cloud** [persistence](references/persistence.md): qu
 
 ### 1. Establish inputs and mode
 
-Load owner [locations](references/locations.md): **project rules/memory first**, then cloud `Resale/.resale-locations.json` via MCP if needed; local JSON paths only when present—never require disk access. Apply `defaults` only when the user did not specify city/language/platforms.
+Load owner [locations](references/locations.md): **project rules/memory first**, then the private `.resale-locations.json` file inside the `Resale` Drive folder via MCP if needed; local JSON paths only when present—never require disk access. Apply `defaults` only when the user did not specify city/language/platforms.
 
 Read the platform registry and record `prepare_only` or a named, previously admitted adapter for each platform. Without an explicit owner request and a named, admitted method, do not connect marketplace MCP, use the owner’s account, or automate forms/upload. Anonymous public research via search or unauthenticated page views is permitted per [account safety](references/account-safety.md).
 
