@@ -24,7 +24,7 @@ Added tests for legacy-to-v2 metadata normalization, ready-state requirements, I
 **Обязательные проверки не делают запросов к Google.** На PR и push остаётся матрица Windows / macOS / Ubuntu × Python 3.10 / 3.14. Отдельный job `offline-quality` на Ubuntu/Python 3.14 запускает:
 
 - `python -m ruff check --select E4,E7,E9,F scripts tests` — стабильные ошибки Python без массового форматирования старого кода;
-- `python -m coverage run --source=scripts/resale_queue -m unittest discover -s tests -q` и `coverage report` — минимум 80% покрытия критичных модулей (`schema.py`, `meta.py`, `photos.py`, `sheets.py`), с возможностью повысить порог после увеличения тестов;
+- `python -m coverage run --source=scripts/resale_queue -m unittest discover -s tests -q` и `coverage report` — минимум 80% покрытия критичных модулей (`schema.py`, `meta.py`, `photos.py`, `sheets.py`, `reconcile.py`), с возможностью повысить порог после увеличения тестов;
 - `python scripts/verify_archive.py` — создание архивного ZIP из `git archive`, проверка путей и запрещённых секретных файлов, повторная проверка пакета и тестов из распакованного дистрибутива.
 
 `scripts/ci_quality.py` объединяет эти команды и выполняется также перед релизом. Репозиторий не требует Google API, OAuth-токены или живую сеть Google для прохода CI. Установка зависимостей через PyPI остаётся внешней зависимостью среды сборки.
