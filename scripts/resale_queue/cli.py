@@ -32,7 +32,7 @@ def cmd_prepare_photos(args: argparse.Namespace) -> None:
         max_bytes=args.max_bytes,
         jpeg_quality=args.jpeg_quality,
     )
-    report = prepare_item_photos(item_dir, config, move_originals=not args.no_archive)
+    report = prepare_item_photos(item_dir, config, move_originals=args.archive_originals)
     write_photo_report(item_dir, report)
     print(json.dumps(report, ensure_ascii=False, indent=2))
 
@@ -105,9 +105,8 @@ def build_parser() -> argparse.ArgumentParser:
     prep.add_argument("--max-bytes", type=int, default=2_000_000)
     prep.add_argument("--jpeg-quality", type=int, default=85)
     prep.add_argument(
-        "--no-archive",
-        action="store_true",
-        help="Delete inbox files after processing instead of moving to photos/original",
+        "--archive-originals", action="store_true",
+        help="Opt in to storing a second copy under photos/original (not for cloud queue)",
     )
     prep.set_defaults(func=cmd_prepare_photos)
 
@@ -115,7 +114,7 @@ def build_parser() -> argparse.ArgumentParser:
     prep_all.add_argument("--max-edge", type=int, default=2048)
     prep_all.add_argument("--max-bytes", type=int, default=2_000_000)
     prep_all.add_argument("--jpeg-quality", type=int, default=85)
-    prep_all.add_argument("--no-archive", action="store_true")
+    prep_all.add_argument("--archive-originals", action="store_true")
     prep_all.set_defaults(func=cmd_prepare_all)
 
     index_p = sub.add_parser("index", help="Rebuild queue-index.json and queue-index.csv")
