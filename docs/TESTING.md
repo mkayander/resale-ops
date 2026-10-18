@@ -19,6 +19,20 @@ python -m unittest discover -s tests -v
 
 Added tests for legacy-to-v2 metadata normalization, ready-state requirements, ID-based Sheets upsert planning and duplicate detection, index/folder ID drift, and photo output verification before staging originals are discarded. No real customer Drive or Sheets should be mutated by these tests. `sheet-push` no longer clears `A:Z`; test partial indexes and repeated updates using fake connector responses before touching a user workspace. Checks cover logic, not an end-to-end live Google OAuth guarantee. Concurrency across independent clients remains an explicit limitation and requires serialization.
 
+## Обязательный CI и внешний Google smoke
+
+**Обязательные проверки не делают запросов к Google.** На PR и push остаётся матрица Windows / macOS / Ubuntu × Python 3.10 / 3.14. Отдельный job `offline-quality` на Ubuntu/Python 3.14 запускает:
+
+- `python -m ruff check --select E4,E7,E9,F scripts tests` — стабильные ошибки Python без массового форматирования старого кода;
+- `python -m coverage run --source=scripts/resale_queue -m unittest discover -s tests -q` и `coverage report` — минимум 65% покрытия критичных модулей (`schema.py`, `meta.py`, `photos.py`, `sheets.py`), с возможностью повысить порог после увеличения тестов;
+- `python scripts/verify_archive.py` — создание архивного ZIP из `git archive`, проверка путей и запрещённых секретных файлов, повторная проверка пакета и тестов из распакованного дистрибутива.
+
+`scripts/ci_quality.py` объединяет эти команды и выполняется также перед релизом. Репозиторий не требует Google API, OAuth-токены или живую сеть Google для прохода CI. Установка зависимостей через PyPI остаётся внешней зависимостью среды сборки.
+
+`Google sandbox smoke (optional)` — **отдельный `workflow_dispatch`**, не `push`, не `pull_request`, не расписание, не обязательный статус. Секреты GitHub Actions `GOOGLE_SMOKE_CREDENTIALS_JSON`, `GOOGLE_SMOKE_FOLDER_ID` и `GOOGLE_SMOKE_SPREADSHEET_ID` включают исключительно **чтение** заранее созданных изолированных тестовых ресурсов; Google Workspace личного/рабочего пользователя использовать нельзя. При отсутствии конфигурации ответ `SKIPPED`. При 429/5xx или недоступности ответ `INCONCLUSIVE`, при проблемах sandbox/схемы — `CONFIG_ERROR`/`FAIL`. Результат виден в логе, аннотациях и summary, а шаг `continue-on-error` не блокирует PR/релиз. Любой доступный статус не доказывает надёжность Google на 100%.
+
+Дополнительные offline регрессии проверяют весь путь `inbox → photos/post → meta.json → ready → Queue`, отсутствие потери других строк, а также чтение цен с `UNFORMATTED_VALUE`. Для реальной надёжности Cloud Drive/Sheets не следует использовать токены и настоящие пользовательские карточки в CI.
+
 ## Ручная приёмка перед публичным релизом
 
 Security review 2026-10-15 выполнено статически по всему пакету и первичным источникам; специализированный сервис Security Review был недоступен, использован общий субагент и проверка основного агента. Запускаемый профиль ru-marketplace-mcp удалён: ограничение источников не ограничивало живые инструменты. Установка стороннего сервера и MCP-handshake не выполнялись. Критерии будущего допуска — в [инструкции интеграции](RU-MARKETPLACE-MCP.md). Нельзя считать простой успешный запрос цены доказательством допустимости автоматизации или обработки блокировок.
