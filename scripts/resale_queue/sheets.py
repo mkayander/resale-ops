@@ -114,15 +114,16 @@ def upsert_rows(service, spreadsheet_id: str, sheet_name: str, updates: list[dic
         spreadsheetId=spreadsheet_id, range=f"{tab}!A1:{last_col}",
     ).execute().get("values", [])
     _header_check(verified)
+    def normalized(row):
+        return ["" if value is None else str(value) for value in row]
+
     for row_number, values in actions:
-        if row_number > len(verified) or list(verified[row_number - 1][:len(values)]) != [
-            str(v) if v != "" else "" for v in values
-        ]:
-            # Values API may return numbers; compare normalized strings.
-            observed = verified[row_number - 1] if row_number <= len(verified) else []
-            def norm(v): return "" if v is None else str(v)
-            if [norm(v) for v in observed[:len(values)]] != [norm(v) for v in values]:
-                raise RuntimeError(f"Queue readback mismatch at row {row_number}")
+        observed = verified[row_number - 1] if row_number <= len(verified) else []
+        observed = normalized(observed)
+        expected = normalized(values)
+        observed += [""] * max(0, len(expected) - len(observed))
+        if observed[:len(expected)] != expected:
+            raise RuntimeError(f"Queue readback mismatch at row {row_number}")
     final_ids = [str(row[0]) for row in verified[1:] if row and str(row[0]).strip()]
     if len(final_ids) != len(set(final_ids)):
         raise RuntimeError("concurrent change or duplicate Queue IDs after upsert")
