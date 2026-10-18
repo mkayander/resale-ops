@@ -6,7 +6,7 @@ backend or pretending that Google Sheets has row-level CAS. The Queue,
 `listing.md` and `meta.json` are **materialized views** in this mode.
 The authoritative record is an immutable item baseline plus all accepted
 change files. See the offline reference implementation
-[`concurrent.py`](../../../scripts/resale_queue/concurrent.py).
+`scripts/resale_queue/concurrent.py`.
 
 ## Files in each item folder
 
