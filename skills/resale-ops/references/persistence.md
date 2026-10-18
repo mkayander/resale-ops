@@ -34,6 +34,8 @@ Spreadsheet **Queue** tab = dashboard (`status`, prices, `folder_url`). Full cop
 6. **Handoff** — PC posting uses cloud `photos/post/` (web Drive or sync). List file names and folder link; no marketplace automation in `prepare_only`.
 7. **Reconcile** — after handoff or later changes, follow the state reconciliation below before reporting completion.
 
+The exact conflict-aware recovery sequence for partial Drive/Sheets writes is in [reconciliation.md](reconciliation.md). Preserve the original snapshot/target across retries; do not silently rebaseline a conflicting external edit. The Python reference implementation is an offline, provider-neutral helper and is not a live ChatGPT connector adapter.
+
 ## Reconcile state after handoff or changes
 
 For an existing queue item, preparation and subsequent changes are complete only when the saved records agree with the known outcome. An owner report is sufficient to record a change with owner-reported provenance; it does not authorize account access to verify it.

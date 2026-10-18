@@ -24,7 +24,7 @@ Added tests for legacy-to-v2 metadata normalization, ready-state requirements, I
 **Обязательные проверки не делают запросов к Google.** На PR и push остаётся матрица Windows / macOS / Ubuntu × Python 3.10 / 3.14. Отдельный job `offline-quality` на Ubuntu/Python 3.14 запускает:
 
 - `python -m ruff check --select E4,E7,E9,F scripts tests` — стабильные ошибки Python без массового форматирования старого кода;
-- `python -m coverage run --source=scripts/resale_queue -m unittest discover -s tests -q` и `coverage report` — минимум 80% покрытия критичных модулей (`schema.py`, `meta.py`, `photos.py`, `sheets.py`), с возможностью повысить порог после увеличения тестов;
+- `python -m coverage run --source=scripts/resale_queue -m unittest discover -s tests -q` и `coverage report` — минимум 80% покрытия критичных модулей (`schema.py`, `meta.py`, `photos.py`, `sheets.py`, `reconcile.py`), с возможностью повысить порог после увеличения тестов;
 - `python scripts/verify_archive.py` — создание архивного ZIP из `git archive`, проверка путей и запрещённых секретных файлов, повторная проверка пакета и тестов из распакованного дистрибутива.
 
 `scripts/ci_quality.py` объединяет эти команды и выполняется также перед релизом. Репозиторий не требует Google API, OAuth-токены или живую сеть Google для прохода CI. Установка зависимостей через PyPI остаётся внешней зависимостью среды сборки.
@@ -32,6 +32,14 @@ Added tests for legacy-to-v2 metadata normalization, ready-state requirements, I
 `Google sandbox smoke (optional)` — **отдельный `workflow_dispatch`**, не `push`, не `pull_request`, не расписание, не обязательный статус. Секреты GitHub Actions `GOOGLE_SMOKE_CREDENTIALS_JSON`, `GOOGLE_SMOKE_FOLDER_ID` и `GOOGLE_SMOKE_SPREADSHEET_ID` включают исключительно **чтение** заранее созданных изолированных тестовых ресурсов; Google Workspace личного/рабочего пользователя использовать нельзя. При отсутствии конфигурации ответ `SKIPPED`. При 429/5xx или недоступности ответ `INCONCLUSIVE`, при проблемах sandbox/схемы — `CONFIG_ERROR`/`FAIL`. Результат виден в логе, аннотациях и summary, а шаг `continue-on-error` не блокирует PR/релиз. Любой доступный статус не доказывает надёжность Google на 100%.
 
 Дополнительные offline регрессии проверяют весь путь `inbox → photos/post → meta.json → ready → Queue`, отсутствие потери других строк, а также чтение цен с `UNFORMATTED_VALUE`. Для реальной надёжности Cloud Drive/Sheets не следует использовать токены и настоящие пользовательские карточки в CI.
+
+## Контракты сохранения и сценарии агента
+
+`tests/test_reconcile.py` проверяет безопасные повторные попытки записи `listing.md → meta.json → Queue`, случай «данные сохранены, но ответ API потерян», частичный отказ и конфликт с внешним изменением. `tests/test_cloud_sync.py` покрывает сохранение полей строки при частичном обновлении. Все тесты офлайн, с имитациями хранилищ. Это **не** проверка живого Google Drive-коннектора; для него нужен отдельный проверенный адаптер и добровольное sandbox-испытание.
+
+`tests/fixtures/agent_scenarios.json` содержит синтетические случаи для проверки поведения агента: неоднозначная модель, дубли, доказательства цен, заражённые инструкциями фото, старое согласование цены и неполная облачная синхронизация. `tests/test_skill_contract.py` проверяет структуру набора и наличие критичных требований безопасности в skill. **CI не вызывает LLM и не подтверждает, что модель выполнит сценарий правильно.** Для реальной поведенческой приёмки вручную подайте каждый `input` в чистую сессию целевого клиента (ChatGPT/Claude/Codex), сверяйте `expected` и `forbidden`, записывайте модель, версию клиента, дату и наблюдаемые нарушения вне публичного репозитория. Используйте только синтетические товары и данные.
+
+Перед включением обязательных проверок в правила ветки настройте GitHub Ruleset / Branch Protection для `main` вручную: требовать `offline-quality` и шесть matrix jobs (точные имена берите из актуального Actions), запретить слияние при failed/pending checks. Это изменение настроек GitHub, а не коммит в репозиторий. `optional-google-smoke` **никогда не добавлять** в required checks. Внутреннее `[skip ci]` релизных коммитов должно учитываться при настройке правил — не создавайте невозможное обязательное условие для release-бота.
 
 ## Ручная приёмка перед публичным релизом
 

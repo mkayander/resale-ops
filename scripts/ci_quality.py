@@ -11,7 +11,8 @@ CHECKS = [
      "-m", "unittest", "discover", "-s", "tests", "-q"],
     [sys.executable, "-m", "coverage", "report",
      "--include=scripts/resale_queue/schema.py,scripts/resale_queue/meta.py,"
-     "scripts/resale_queue/photos.py,scripts/resale_queue/sheets.py",
+     "scripts/resale_queue/photos.py,scripts/resale_queue/sheets.py,"
+     "scripts/resale_queue/reconcile.py",
      "--fail-under=80"],
     [sys.executable, "scripts/verify_archive.py"],
 ]

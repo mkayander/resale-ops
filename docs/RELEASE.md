@@ -8,6 +8,8 @@
 
 Google smoke запускается **только вручную** в отдельном workflow `Google sandbox smoke (optional)` с специально выданными read-only правами к тестовым папке/таблице; он никогда не является обязательным статусом для релиза. Неполадки Google могут выдавать `INCONCLUSIVE`, но не останавливают публикацию репозитория. GitHub Actions, PyPI и npm registry остаются обычными внешними зависимостями pipeline.
 
+Для защищённой `main` включайте обязательные offline checks через GitHub Ruleset/Branch Protection. Настройка находится в GitHub и **не следует из наличия workflow в репозитории**. Не требуйте `optional-google-smoke`; его внешний сбой не должен блокировать ни PR, ни релиз. Сохранение пользовательских карточек и реальная оценка поведения модели проверяются отдельно.
+
 Перед каждым релизом проверьте отсутствие личных фото, контактов, точных адресов, сессий браузера и реальных черновиков. Не добавляйте рабочий каталог продажи в репозиторий. Проверьте состав отслеживаемых файлов: `.gitignore` не исключает уже отслеживаемые данные.
 
 Версию в `package.json`, `plugin.json` и `.claude-plugin/plugin.json` обновляет [semantic-release](https://semantic-release.gitbook.io/) в workflow [Release](../.github/workflows/release.yml) после merge в `main`. Коммиты в `main` должны следовать [Conventional Commits](https://www.conventionalcommits.org/): `feat:` — minor, `fix:` — patch, `BREAKING CHANGE:` или `feat!:` / `fix!:` — major; `chore:`, `docs:`, `ci:` и прочие типы по умолчанию релиз не создают.

@@ -77,6 +77,26 @@ class ResaleQueueTest(unittest.TestCase):
             self.assertTrue(csv_path.is_file())
 
 
+    def test_future_schema_version_is_rejected_without_mutation(self):
+        raw = {"id": "test-chair", "schema_version": 3}
+        with self.assertRaisesRegex(ValueError, "unsupported metadata schema"):
+            normalize_meta(raw)
+        self.assertEqual(raw["schema_version"], 3)
+
+    def test_mismatched_photo_count_or_legacy_price_is_rejected(self):
+        bad = {"id": "test-chair", "photos": {"prepared_filenames": ["01.jpg"],
+               "post_count": 4}}
+        with self.assertRaisesRegex(ValueError, "post_count"):
+            validate_meta(bad)
+        bad = {"id": "test-chair", "list_price_rub": 1000,
+               "price": {"list_price_rub": 2000}}
+        with self.assertRaisesRegex(ValueError, "conflicting"):
+            validate_meta(bad)
+
+    def test_listing_digest_shape_is_validated(self):
+        with self.assertRaisesRegex(ValueError, "listing_sha256"):
+            validate_meta({"id": "test-chair", "sync": {"listing_sha256": "oops"}})
+
     def test_legacy_flat_metadata_migrates_without_mutation(self):
         legacy = {"id": "old-item", "status": "draft", "title": "Item",
                   "list_price_rub": 1200, "quick_sale_rub": 900,

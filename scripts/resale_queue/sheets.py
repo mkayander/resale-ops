@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import json
 import os
+from decimal import Decimal, InvalidOperation
 from pathlib import Path
 from typing import Any
 from .meta import INDEX_FIELDS
@@ -54,7 +55,8 @@ def plan_upserts(existing: list[list], updates: list[dict]) -> list[tuple[int, l
     """Pure planner. 1-based row positions; leaves unrelated rows untouched.
 
     Rejects duplicate existing IDs and duplicate input IDs rather than choosing
-    a possibly stale row. This is not an atomic multi-client transaction.
+    a possibly stale row. Partial updates retain existing unspecified fields.
+    This is not an atomic multi-client transaction.
     """
     _header_check(existing)
     seen: dict[str, int] = {}
@@ -76,12 +78,19 @@ def plan_upserts(existing: list[list], updates: list[dict]) -> list[tuple[int, l
         if key in updates_ids:
             raise ValueError(f"duplicate update item ID: {key}")
         updates_ids.add(key)
-        values = [item.get(name, "") if item.get(name) is not None else "" for name in SHEET_HEADERS]
         if key in seen:
             row = seen[key]
+            # Preserve existing values in columns omitted by a partial patch.
+            # An explicit None/empty string is a deliberate request to clear.
+            values = list(existing[row - 1][:len(SHEET_HEADERS)])
+            values += [""] * (len(SHEET_HEADERS) - len(values))
         else:
             row = next_row
             next_row += 1
+            values = [""] * len(SHEET_HEADERS)
+        for column, name in enumerate(SHEET_HEADERS):
+            if name in item:
+                values[column] = item[name] if item[name] is not None else ""
         actions.append((row, values))
     return actions
 
@@ -116,15 +125,23 @@ def upsert_rows(service, spreadsheet_id: str, sheet_name: str, updates: list[dic
         valueRenderOption="UNFORMATTED_VALUE",
     ).execute().get("values", [])
     _header_check(verified)
-    def normalized(row):
-        return ["" if value is None else str(value) for value in row]
+    def comparable(index, value):
+        if value is None or value == "":
+            return ""
+        if SHEET_HEADERS[index] in {"list_price_rub", "quick_sale_rub", "post_photo_count"}:
+            try:
+                return Decimal(str(value))
+            except InvalidOperation:
+                pass
+        return str(value)
 
     for row_number, values in actions:
         observed = verified[row_number - 1] if row_number <= len(verified) else []
-        observed = normalized(observed)
-        expected = normalized(values)
-        observed += [""] * max(0, len(expected) - len(observed))
-        if observed[:len(expected)] != expected:
+        if any(
+            comparable(index, observed[index] if index < len(observed) else "") !=
+            comparable(index, expected)
+            for index, expected in enumerate(values)
+        ):
             raise RuntimeError(f"Queue readback mismatch at row {row_number}")
     final_ids = [str(row[0]) for row in verified[1:] if row and str(row[0]).strip()]
     if len(final_ids) != len(set(final_ids)):

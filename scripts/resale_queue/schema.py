@@ -19,6 +19,9 @@ def normalize_meta(raw: dict) -> dict:
     """Return a canonical copy, preserving user-specific/unknown fields."""
     if not isinstance(raw, dict):
         raise ValueError("meta.json must be an object")
+    version = raw.get("schema_version", 1)
+    if isinstance(version, bool) or not isinstance(version, int) or not 1 <= version <= SCHEMA_VERSION:
+        raise ValueError("unsupported metadata schema version")
     meta = copy.deepcopy(raw)
     meta["schema_version"] = SCHEMA_VERSION
     price = meta.setdefault("price", {})
@@ -27,7 +30,9 @@ def normalize_meta(raw: dict) -> dict:
     for field in ("list_price_rub", "quick_sale_rub"):
         if field not in price and field in meta:
             price[field] = meta.pop(field)
-        elif field in price:
+        elif field in price and field in meta:
+            if price[field] != meta[field]:
+                raise ValueError(f"conflicting flat and nested {field}")
             meta.pop(field, None)
     price.setdefault("currency", "RUB")
     price.setdefault("price_selected_by_owner", False)
@@ -39,8 +44,15 @@ def normalize_meta(raw: dict) -> dict:
         photos["prepared_filenames"] = [
             PurePosixPath(path).name for path in photos.get("post", [])
         ]
+    if "post" in photos and "prepared_filenames" in raw.get("photos", {}):
+        legacy = [PurePosixPath(path).name for path in photos["post"]]
+        if legacy != photos["prepared_filenames"]:
+            raise ValueError("conflicting old and new posting photo lists")
     photos.pop("post", None)
-    photos["post_count"] = len(photos["prepared_filenames"])
+    count = len(photos["prepared_filenames"])
+    if "post_count" in photos and photos["post_count"] != count:
+        raise ValueError("post_count conflicts with prepared_filenames")
+    photos["post_count"] = count
     photos.setdefault("metadata_status", "not_processed")
 
     platforms = meta.setdefault("platforms", {})
@@ -82,6 +94,15 @@ def validate_meta(raw: dict, *, ready_check: bool = True) -> dict:
         raise ValueError("duplicate prepared photo filenames")
     if not isinstance(meta["platforms"], dict):
         raise ValueError("invalid platforms")
+    sync = meta.get("sync")
+    if sync is not None:
+        if not isinstance(sync, dict):
+            raise ValueError("sync must be an object")
+        digest = sync.get("listing_sha256")
+        if digest is not None and (
+            not isinstance(digest, str) or not re.fullmatch(r"[0-9a-f]{64}", digest)
+        ):
+            raise ValueError("invalid listing_sha256")
     if ready_check and meta["status"] == "ready":
         if not meta.get("title") or not meta.get("city"):
             raise ValueError("ready requires title and city")
