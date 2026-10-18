@@ -187,6 +187,77 @@ class CloudSyncRegressionTest(unittest.TestCase):
             upsert_rows(FakeService(v), "test", "Queue",
                         [{"id": "one", "status": "ready"}])
 
+    def test_concurrent_new_items_append_after_server_current_end(self):
+        fake = FakeValues([SHEET_HEADERS, ["existing", "ready"]])
+        fake.before_append = lambda v: v.table.append(["other-chat", "draft"])
+        upsert_rows(FakeService(fake), "test", "Queue",
+                    [{"id": "my-new-item", "title": "New device"}])
+        self.assertEqual([row[0] for row in fake.table[1:]],
+                         ["existing", "other-chat", "my-new-item"])
+        self.assertEqual(fake.appends, ["my-new-item"])
+        self.assertEqual(fake.clear_calls, 0)
+
+    def test_two_sequential_clients_append_without_stale_next_row(self):
+        fake = FakeValues([SHEET_HEADERS])
+        a, b = FakeService(fake), FakeService(fake)
+        upsert_rows(a, "test", "Queue", [{"id": "a", "status": "draft"}])
+        upsert_rows(b, "test", "Queue", [{"id": "b", "status": "researching"}])
+        self.assertEqual([row[0] for row in fake.table[1:]], ["a", "b"])
+        self.assertEqual(len(fake.appends), 2)
+
+    def test_deleted_row_shifts_target_preflight_stops_before_write(self):
+        fake = FakeValues([SHEET_HEADERS, ["removed", "draft"],
+                           ["target", "draft"]])
+        fake.before_identity = lambda v: v.table.pop(1)
+        with self.assertRaisesRegex(QueueConflict, "moved"):
+            upsert_rows(FakeService(fake), "test", "Queue",
+                        [{"id": "target", "status": "ready"}])
+        self.assertEqual(fake.table[1][:2], ["target", "draft"])
+        self.assertFalse(fake.updates)
+        # Retrying discovers the NEW row position rather than reusing row 3.
+        upsert_rows(FakeService(fake), "test", "Queue",
+                    [{"id": "target", "status": "ready"}])
+        self.assertEqual(fake.table[1][:2], ["target", "ready"])
+
+    def test_insert_above_target_preflight_does_not_touch_new_row(self):
+        fake = FakeValues([SHEET_HEADERS, ["target", "draft"]])
+        fake.before_identity = lambda v: v.table.insert(1, ["other-chat", "posted"])
+        with self.assertRaisesRegex(QueueConflict, "moved"):
+            upsert_rows(FakeService(fake), "test", "Queue",
+                        [{"id": "target", "status": "ready"}])
+        self.assertEqual(fake.table[1][:2], ["other-chat", "posted"])
+        self.assertFalse(fake.updates)
+
+    def test_sparse_patch_keeps_other_chat_field_and_formulas(self):
+        fake = FakeValues([SHEET_HEADERS, ["target", "draft", "=PROPER(A2)",
+                           "Москва", 2900]])
+        fake.before_identity = lambda v: v.table[1].extend(
+            [""] * (len(SHEET_HEADERS) - len(v.table[1]))
+        )
+        upsert_rows(FakeService(fake), "test", "Queue",
+                    [{"id": "target", "status": "ready"}])
+        self.assertEqual(fake.table[1][2], "=PROPER(A2)")
+        self.assertEqual(fake.table[1][4], 2900)
+        self.assertEqual(len(fake.updates), 1)
+        self.assertTrue(fake.updates[0].endswith("!B2"))
+
+    def test_deleted_other_item_does_not_cause_existing_target_reinsert(self):
+        fake = FakeValues([SHEET_HEADERS, ["item-one", "draft"],
+                           ["item-two", "researching"]])
+        fake.table.pop(1)
+        upsert_rows(FakeService(fake), "test", "Queue",
+                    [{"id": "item-two", "status": "ready"}])
+        self.assertEqual([row[0] for row in fake.table[1:]], ["item-two"])
+        self.assertEqual(fake.table[1][1], "ready")
+
+    def test_duplicate_id_from_concurrent_append_is_reported(self):
+        fake = FakeValues([SHEET_HEADERS])
+        fake.before_append = lambda v: v.table.append(["new-item", "other-editor"])
+        with self.assertRaisesRegex(QueueConflict, "duplicate Queue"):
+            upsert_rows(FakeService(fake), "test", "Queue",
+                        [{"id": "new-item", "status": "draft"}])
+        self.assertEqual(len(fake.table), 3)  # no destructive deduplication
+
     def test_duplicate_cloud_rows_stop_before_write(self):
         v = FakeValues([SHEET_HEADERS, ["repeat"], ["repeat"]])
         with self.assertRaisesRegex(ValueError, "duplicate Queue"):
