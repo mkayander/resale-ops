@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import json
 import os
+from decimal import Decimal, InvalidOperation
 from pathlib import Path
 from typing import Any
 from .meta import INDEX_FIELDS
@@ -124,15 +125,23 @@ def upsert_rows(service, spreadsheet_id: str, sheet_name: str, updates: list[dic
         valueRenderOption="UNFORMATTED_VALUE",
     ).execute().get("values", [])
     _header_check(verified)
-    def normalized(row):
-        return ["" if value is None else str(value) for value in row]
+    def comparable(index, value):
+        if value is None or value == "":
+            return ""
+        if SHEET_HEADERS[index] in {"list_price_rub", "quick_sale_rub", "post_photo_count"}:
+            try:
+                return Decimal(str(value))
+            except InvalidOperation:
+                pass
+        return str(value)
 
     for row_number, values in actions:
         observed = verified[row_number - 1] if row_number <= len(verified) else []
-        observed = normalized(observed)
-        expected = normalized(values)
-        observed += [""] * max(0, len(expected) - len(observed))
-        if observed[:len(expected)] != expected:
+        if any(
+            comparable(index, observed[index] if index < len(observed) else "") !=
+            comparable(index, expected)
+            for index, expected in enumerate(values)
+        ):
             raise RuntimeError(f"Queue readback mismatch at row {row_number}")
     final_ids = [str(row[0]) for row in verified[1:] if row and str(row[0]).strip()]
     if len(final_ids) != len(set(final_ids)):
