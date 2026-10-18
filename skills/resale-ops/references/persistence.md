@@ -46,6 +46,17 @@ For an existing queue item, preparation and subsequent changes are complete only
 
 Cloud reconciliation changes tracking only; it does not authorize marketplace access or expand an adapter's permitted operations.
 
+
+## Canonical metadata v2 and safe reconciliation
+
+New local and cloud items use **metadata schema v2**: `price.list_price_rub`, `price.quick_sale_rub`, `price.price_selected_by_owner`, and `photos.prepared_filenames` (basenames under `photos/post/`). `photos.post_count` must equal the number of names. The local queue reader supports older flat files and `photos.post` paths without modifying the original until an explicit save. Do not mix flattened price/photolist fields in a new record. Missing source data stays unknown; do not mark it confirmed.
+
+The queue is a **derived index**, not the authoritative owner of item facts. Treat each item folder's `meta.json` and `listing.md` as canonical; update them in place. `sheet-push` now performs per-ID upserts and never clears the Queue tab. Before modifying a sheet, read headers and IDs, reject duplicates, and on failure leave unrelated rows intact. After writing, read back changed rows and reconcile discrepancies. Sheets lacks transaction-level compare-and-swap in this integration; concurrent writers should be serialized. Do not reconstruct the full sheet from an incomplete local index.
+
+To mark `ready`, require a title, city, owner-selected asking price, sanitized photo filenames with verified metadata status, and agreed pickup or delivery. Missing optional box/instructions or a separate leak check can remain unresolved, explicitly labeled. A final `listing.md` must not retain stale placeholder text claiming price or handoff is unknown. Compare this text against `meta.json` and Queue on readback.
+
+Google Drive connector note: file/library upload with `overwrite=true` may not work. Use an in-place Drive `files.update`-style operation on the **existing file ID** with a valid connector file reference, then fetch and verify; do not create a competing `listing.md` or `meta.json`. If a staging file is required, upload it privately, verify it, update the canonical ID, and delete the staging file only after canonical readback succeeds.
+
 ## Optional: local sync + scripts
 
 Owners with **Google Drive for desktop** (or similar) may set `local.resale_root` in locations JSON and run `scripts/resale_queue.py` against that path. This is an **accelerator**, not part of the portable skill contract.
