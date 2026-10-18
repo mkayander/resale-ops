@@ -10,6 +10,8 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "scripts"))
 
 from resale_queue.meta import build_index, init_item, write_index_files
+from resale_queue.schema import normalize_meta, validate_meta, to_queue_row
+from resale_queue.sheets import plan_upserts, SHEET_HEADERS
 from resale_queue.photos import PhotoProcessConfig, prepare_item_photos, write_photo_report
 
 
@@ -31,7 +33,7 @@ class ResaleQueueTest(unittest.TestCase):
                 self.assertFalse(image.getexif())
 
             self.assertFalse((inbox / "big.png").exists())
-            self.assertTrue((item_dir / "photos" / "original" / "big.png").exists())
+            self.assertFalse((item_dir / "photos" / "original").exists())
 
     def test_empty_inbox_preserves_existing_post_metadata(self):
         with tempfile.TemporaryDirectory() as tmp:
@@ -42,7 +44,7 @@ class ResaleQueueTest(unittest.TestCase):
             write_photo_report(item_dir, prepare_item_photos(item_dir, PhotoProcessConfig()))
 
             meta = json.loads((item_dir / "meta.json").read_text(encoding="utf-8"))
-            self.assertEqual(meta["photos"]["post"], ["photos/post/01.jpg"])
+            self.assertEqual(meta["photos"]["prepared_filenames"], ["01.jpg"])
             self.assertEqual(meta["photos"]["metadata_status"], "stripped_verified")
             self.assertTrue((item_dir / "photos" / "post" / "01.jpg").is_file())
 
@@ -74,6 +76,76 @@ class ResaleQueueTest(unittest.TestCase):
             self.assertTrue(json_path.is_file())
             self.assertTrue(csv_path.is_file())
 
+
+    def test_legacy_flat_metadata_migrates_without_mutation(self):
+        legacy = {"id": "old-item", "status": "draft", "title": "Item",
+                  "list_price_rub": 1200, "quick_sale_rub": 900,
+                  "platforms": ["avito"], "photos": {"post": ["photos/post/01.jpg"]}}
+        updated = normalize_meta(legacy)
+        self.assertEqual(updated["schema_version"], 2)
+        self.assertEqual(updated["price"]["list_price_rub"], 1200)
+        self.assertEqual(updated["photos"]["prepared_filenames"], ["01.jpg"])
+        self.assertNotIn("price", legacy)
+        self.assertEqual(to_queue_row(updated, "old-item")["post_photo_count"], 1)
+
+    def test_realistic_cloud_metadata_indexes_price_and_photos(self):
+        meta = {"id": "chigo-fkl-ml139r-20261018", "title": "CHIGO", "city": "Москва",
+                "status": "ready", "pickup_location": "Москва, метро Севастопольская",
+                "price": {"list_price_rub": 2900, "quick_sale_rub": 1900,
+                          "price_selected_by_owner": True},
+                "photos": {"prepared_filenames": ["01_chigo_front.jpg",
+                                                   "02_chigo_side.jpg"],
+                           "metadata_status": "stripped_verified"}}
+        row = to_queue_row(meta, meta["id"])
+        self.assertEqual(row["list_price_rub"], 2900)
+        self.assertEqual(row["post_photo_count"], 2)
+
+    def test_ready_gate_enforces_owner_price_handoff_and_photos(self):
+        base = {"id": "test-chair", "title": "Chair", "city": "Москва",
+                "status": "ready", "price": {"list_price_rub": 1000,
+                "price_selected_by_owner": True},
+                "photos": {"prepared_filenames": ["01.jpg"],
+                           "metadata_status": "stripped_verified"}}
+        with self.assertRaisesRegex(ValueError, "handoff"):
+            validate_meta(base)
+        base["pickup_location"] = "Москва"
+        validate_meta(base)
+        base["price"]["price_selected_by_owner"] = False
+        with self.assertRaisesRegex(ValueError, "owner-approved"):
+            validate_meta(base)
+
+    def test_sheets_upsert_preserves_other_rows_and_rejects_duplicates(self):
+        existing = [SHEET_HEADERS, ["other-item", "ready"], ["my-item", "draft"]]
+        actions = plan_upserts(existing, [{"id": "my-item", "status": "ready"},
+                                          {"id": "new-item", "status": "draft"}])
+        self.assertEqual([row for row, _ in actions], [3, 4])
+        self.assertEqual(existing[1][0], "other-item")
+        with self.assertRaisesRegex(ValueError, "duplicate Queue"):
+            plan_upserts([SHEET_HEADERS, ["same"], ["same"]], [{"id": "same"}])
+        with self.assertRaisesRegex(ValueError, "duplicate update"):
+            plan_upserts(existing, [{"id": "my-item"}, {"id": "my-item"}])
+        with self.assertRaisesRegex(ValueError, "headers"):
+            plan_upserts([["bad"]], [{"id": "my-item"}])
+
+    def test_oversized_photo_keeps_original(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            item_dir = init_item(Path(tmp), "too-big")
+            source = item_dir / "inbox" / "one.png"
+            Image.new("RGB", (32, 32), color="orange").save(source)
+            with self.assertRaisesRegex(ValueError, "byte limit"):
+                prepare_item_photos(item_dir, PhotoProcessConfig(max_bytes=2))
+            self.assertTrue(source.exists())
+            self.assertFalse((item_dir / "photos/post/01.jpg").exists())
+
+    def test_index_rejects_wrong_folder_identity(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            item_dir = init_item(root, "chair")
+            meta = json.loads((item_dir / "meta.json").read_text())
+            meta["id"] = "another-chair"
+            (item_dir / "meta.json").write_text(json.dumps(meta))
+            with self.assertRaisesRegex(ValueError, "ID mismatch"):
+                build_index(root)
 
 if __name__ == "__main__":
     unittest.main()
