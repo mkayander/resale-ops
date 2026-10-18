@@ -41,6 +41,19 @@ class PackageTest(unittest.TestCase):
                 with self.assertRaises(ValueError):
                     self.validate()
 
+    def test_literal_escaped_paragraph_separator_is_rejected(self):
+        for relative in ("skills/resale-ops/SKILL.md",
+                         "skills/resale-ops/references/persistence.md"):
+            with self.subTest(path=relative):
+                self.setUp()
+                target = self.root / relative
+                target.write_text(
+                    target.read_text(encoding="utf-8") + "\\n\\n",
+                    encoding="utf-8",
+                )
+                with self.assertRaisesRegex(ValueError, "Literal escaped paragraph"):
+                    self.validate()
+
     def test_broken_documentation_link_is_rejected(self):
         document = self.root / "docs/INSTALL.md"
         document.write_text("[Missing](not-here.md)\n", encoding="utf-8")
