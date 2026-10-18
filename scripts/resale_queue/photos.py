@@ -143,10 +143,20 @@ def prepare_item_photos(
     existing_posts = list_existing_post_paths(post_dir)
 
     if not inbox_files:
+        # Do not upgrade trust from filenames alone. Inspect retained posting
+        # bytes if metadata has not yet been persisted.
+        verified = bool(existing_posts)
+        for relative in existing_posts:
+            try:
+                with Image.open(item_dir / relative) as saved:
+                    verified = verified and not bool(saved.getexif())
+                    saved.verify()
+            except (OSError, ValueError):
+                verified = False
         return {
             "processed_at": _utc_now(),
             "processor": PROCESSOR_ID,
-            "metadata_status": "unchanged_existing" if existing_posts else "no_inbox_files",
+            "metadata_status": "stripped_verified" if verified else "no_inbox_files",
             "config": {
                 "max_edge": config.max_edge,
                 "max_bytes": config.max_bytes,
@@ -207,7 +217,10 @@ def write_photo_report(item_dir: Path, report: dict) -> None:
     meta.setdefault("photos", {})
     status = report["metadata_status"]
     if report.get("skipped") == "empty_inbox":
-        status = meta["photos"].get("metadata_status", "not_processed")
+        previously = meta["photos"].get("metadata_status", "not_processed")
+        status = "stripped_verified" if (
+            previously == "stripped_verified" or status == "stripped_verified"
+        ) else previously
     meta["photos"].update(
         {
             "prepared_filenames": [Path(x).name for x in report["post"]],
