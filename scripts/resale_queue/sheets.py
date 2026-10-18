@@ -101,6 +101,7 @@ def upsert_rows(service, spreadsheet_id: str, sheet_name: str, updates: list[dic
     last_col = "M"
     existing = api.get(
         spreadsheetId=spreadsheet_id, range=f"{tab}!A1:{last_col}",
+        valueRenderOption="UNFORMATTED_VALUE",
     ).execute().get("values", [])
     actions = plan_upserts(existing, updates)
     for row_number, values in actions:
