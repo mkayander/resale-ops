@@ -69,6 +69,11 @@ Drive и строк Sheets. При их отсутствии агент объя
 и выгрузки аккаунта в публичный репозиторий. Подготовку копий без EXIF/GPS нужно
 выполнить и проверить до статуса `ready`; размещение на площадке всегда ручное.
 
+
+### Reliability and data integrity
+
+Current cloud queue fields use nested metadata v2 (with a backward-compatible legacy reader). Every Queue sync is by stable item ID, leaves other rows intact, and verifies the result. Whole-sheet clearing is disabled in the `sheet-push` utility. The photo processor discards staging originals only after a sanitized posting copy has been verified; optional local `--archive-originals` retains a second copy only when explicitly selected. See [persistence](skills/resale-ops/references/persistence.md) for recovery, current limitations, and readback requirements.
+
 ## Установка и распространение
 
 - [Установка для трёх приложений](docs/INSTALL.md).
