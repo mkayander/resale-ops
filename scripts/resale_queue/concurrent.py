@@ -137,8 +137,11 @@ def _parse_operations(baseline: dict, operations: list[dict]) -> dict[str, dict]
         edits = raw.get("edits")
         if not isinstance(edits, dict) or not edits:
             raise JournalError("empty or invalid edit")
-        for key in edits:
+        for key, value in edits.items():
             _path(key)
+            # Do not preserve malformed operations as immutable events.
+            _set_path(copy.deepcopy({"listing": baseline["listing"], "meta": baseline["meta"]}),
+                      key, value)
         paths = list(edits)
         if any(
             p != q and (p.startswith(q + ".") or q.startswith(p + "."))
@@ -245,10 +248,6 @@ def make_operation(baseline: dict, view: JournalView, edits: dict, *,
         _path(path)
         if isinstance(value, dict):
             raise JournalError("use leaf-level edits")
-    if view.conflicts and any(path not in view.conflicts for path in edits):
-        # It is safe to append non-conflicting edits too; keep this explicit
-        # to avoid accidentally claiming conflict resolution of the whole item.
-        pass
     return {
         "format": 1, "item_id": baseline["meta"]["id"],
         "operation_id": op_id, "base_hash": baseline["base_hash"],
@@ -269,6 +268,9 @@ def append_and_verify(store: JournalStore, item_id: str, operation: dict) -> Jou
         raise JournalError("wrong item ID")
     pre = store.list_operations(item_id)
     replay(baseline, pre)  # Fail closed on missing/duplicate/corrupt history.
+    # Check a prospective event before making it permanent. This may yield
+    # a conflict (allowed) but must not yield invalid schema or dependencies.
+    replay(baseline, [*pre, operation])
     old = {op["operation_id"]: op for op in pre}
     op_id = operation["operation_id"]
     if op_id in old:
