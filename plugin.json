@@ -1,7 +1,7 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "resale-ops",
-  "version": "0.5.5",
+  "version": "0.5.6",
   "repository": "https://github.com/mkayander/resale-ops",
   "description": "Prepare evidence-based resale listings for manual posting; automate only through separately verified marketplace-authorized methods.",
   "license": "MIT",
