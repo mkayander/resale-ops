@@ -12,7 +12,7 @@ from PIL import Image, ImageOps
 
 PROCESSOR_ID = "resale_queue/1.0.0"
 SUPPORTED_SUFFIXES = {".jpg", ".jpeg", ".png", ".webp"}
-_POST_NAME = re.compile(r"^(\d{2})\.jpg$", re.IGNORECASE)
+_POST_NAME = re.compile(r"^(\d{2})(?:[_-][A-Za-z0-9_.-]+)?\.jpg$", re.IGNORECASE)
 
 
 @dataclass(frozen=True)
@@ -146,7 +146,7 @@ def prepare_item_photos(
         return {
             "processed_at": _utc_now(),
             "processor": PROCESSOR_ID,
-            "metadata_status": "stripped_verified" if existing_posts else "no_inbox_files",
+            "metadata_status": "unchanged_existing" if existing_posts else "no_inbox_files",
             "config": {
                 "max_edge": config.max_edge,
                 "max_bytes": config.max_bytes,
@@ -205,11 +205,14 @@ def write_photo_report(item_dir: Path, report: dict) -> None:
     from .schema import normalize_meta, validate_meta
     meta = normalize_meta(meta)
     meta.setdefault("photos", {})
+    status = report["metadata_status"]
+    if report.get("skipped") == "empty_inbox":
+        status = meta["photos"].get("metadata_status", "not_processed")
     meta["photos"].update(
         {
             "prepared_filenames": [Path(x).name for x in report["post"]],
             "post_count": len(report["post"]),
-            "metadata_status": report["metadata_status"],
+            "metadata_status": status,
             "processed_at": report["processed_at"],
             "processor": report["processor"],
             "last_run": report,
