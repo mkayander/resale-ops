@@ -260,7 +260,7 @@ class CloudSyncRegressionTest(unittest.TestCase):
 
     def test_duplicate_cloud_rows_stop_before_write(self):
         v = FakeValues([SHEET_HEADERS, ["repeat"], ["repeat"]])
-        with self.assertRaisesRegex(ValueError, "duplicate Queue"):
+        with self.assertRaisesRegex(QueueConflict, "duplicate Queue"):
             upsert_rows(FakeService(v), "test", "Queue", [{"id": "repeat"}])
         self.assertFalse(v.updates)
 
