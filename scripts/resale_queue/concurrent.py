@@ -142,6 +142,19 @@ def _parse_operations(baseline: dict, operations: list[dict]) -> dict[str, dict]
             # Do not preserve malformed operations as immutable events.
             _set_path(copy.deepcopy({"listing": baseline["listing"], "meta": baseline["meta"]}),
                       key, value)
+        # A fresh asking price or handoff is a new listing version; do not
+        # accidentally reuse approval/copy tied to the previous price.
+        if "meta.price.list_price_rub" in edits and (
+            "listing" not in edits or "meta.price.price_selected_by_owner" not in edits
+        ):
+            raise JournalError("asking price requires listing and explicit owner approval update")
+        if any(k in edits for k in (
+            "meta.pickup_location", "meta.delivery_terms", "meta.title"
+        )) and "listing" not in edits:
+            raise JournalError("listing-relevant terms require updating listing text")
+        if ("meta.photos.prepared_filenames" in edits
+                and "meta.photos.metadata_status" not in edits):
+            raise JournalError("photo list edit requires explicit sanitized metadata status")
         paths = list(edits)
         if any(
             p != q and (p.startswith(q + ".") or q.startswith(p + "."))
@@ -222,6 +235,8 @@ def replay(baseline: dict, operations: list[dict]) -> JournalView:
             continue
         winner = values[min(values)]
         _set_path(state, path, winner)
+    if "meta.photos.prepared_filenames" in by_path and not conflicts:
+        state["meta"]["photos"]["post_count"] = len(state["meta"]["photos"]["prepared_filenames"])
 
     # Never project a conflicted state: all edits remain in the immutable log.
     if not conflicts:
