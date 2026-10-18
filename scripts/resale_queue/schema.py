@@ -30,7 +30,7 @@ def normalize_meta(raw: dict) -> dict:
     for field in ("list_price_rub", "quick_sale_rub"):
         if field not in price and field in meta:
             price[field] = meta.pop(field)
-        elif field in price:
+        elif field in price and field in meta:
             if price[field] != meta[field]:
                 raise ValueError(f"conflicting flat and nested {field}")
             meta.pop(field, None)
