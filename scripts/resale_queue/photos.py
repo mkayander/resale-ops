@@ -129,9 +129,9 @@ def prepare_item_photos(
     item_dir: Path,
     config: PhotoProcessConfig,
     *,
-    move_originals: bool = True,
+    move_originals: bool = False,
 ) -> dict:
-    """Move inbox photos to photos/post as stripped JPEGs; optionally archive originals."""
+    """Sanitize photos, verify outputs, then discard staging originals by default."""
     inbox = item_dir / "inbox"
     post_dir = item_dir / "photos" / "post"
     original_dir = item_dir / "photos" / "original"
@@ -162,7 +162,16 @@ def prepare_item_photos(
     for offset, source in enumerate(inbox_files):
         index = start_index + offset
         dest = post_dir / f"{index:02d}.jpg"
-        results.append(process_one(source, dest, config))
+        result = process_one(source, dest, config)
+        # Read output back before deleting/moving the only source.
+        with Image.open(dest) as check:
+            if check.getexif() or check.size != (result.width, result.height):
+                dest.unlink(missing_ok=True)
+                raise ValueError(f"sanitized photo verification failed: {dest}")
+        if result.bytes_after > config.max_bytes:
+            dest.unlink(missing_ok=True)
+            raise ValueError(f"photo exceeds requested byte limit: {dest}")
+        results.append(result)
         if move_originals:
             target = original_dir / source.name
             if target.exists():
@@ -193,10 +202,13 @@ def write_photo_report(item_dir: Path, report: dict) -> None:
     meta = {}
     if meta_path.is_file():
         meta = json.loads(meta_path.read_text(encoding="utf-8"))
+    from .schema import normalize_meta, validate_meta
+    meta = normalize_meta(meta)
     meta.setdefault("photos", {})
     meta["photos"].update(
         {
-            "post": report["post"],
+            "prepared_filenames": [Path(x).name for x in report["post"]],
+            "post_count": len(report["post"]),
             "metadata_status": report["metadata_status"],
             "processed_at": report["processed_at"],
             "processor": report["processor"],
@@ -204,4 +216,7 @@ def write_photo_report(item_dir: Path, report: dict) -> None:
         }
     )
     meta["updated_at"] = report["processed_at"]
-    meta_path.write_text(json.dumps(meta, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    meta = validate_meta(meta)
+    tmp = meta_path.with_suffix(".json.tmp")
+    tmp.write_text(json.dumps(meta, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    tmp.replace(meta_path)
