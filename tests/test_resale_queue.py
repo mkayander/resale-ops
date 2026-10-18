@@ -66,7 +66,7 @@ class ResaleQueueTest(unittest.TestCase):
             item_dir = init_item(root, "index-test")
             meta = json.loads((item_dir / "meta.json").read_text(encoding="utf-8"))
             meta["title"] = "Chair"
-            meta["status"] = "ready"
+            meta["status"] = "draft"
             (item_dir / "meta.json").write_text(json.dumps(meta), encoding="utf-8")
 
             rows = build_index(root)
