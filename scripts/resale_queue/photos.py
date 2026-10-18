@@ -12,7 +12,7 @@ from PIL import Image, ImageOps
 
 PROCESSOR_ID = "resale_queue/1.0.0"
 SUPPORTED_SUFFIXES = {".jpg", ".jpeg", ".png", ".webp"}
-_POST_NAME = re.compile(r"^(\d{2})(?:[_-][A-Za-z0-9_.-]+)?\.jpg$", re.IGNORECASE)
+_POST_NAME = re.compile(r"^(\d{2,})(?:[_-][A-Za-z0-9_.-]+)?\.jpg$", re.IGNORECASE)
 
 
 @dataclass(frozen=True)
@@ -90,16 +90,38 @@ def process_one(source: Path, dest: Path, config: PhotoProcessConfig) -> PhotoPr
     )
 
 
+def _verify_post_image(path: Path, *, expected_size: tuple[int, int] | None = None) -> None:
+    """Read a complete JPEG and reject EXIF or malformed bytes before reporting safe."""
+    try:
+        with Image.open(path) as image:
+            if image.format != "JPEG" or image.getexif():
+                raise ValueError(f"posting image must be JPEG without EXIF: {path.name}")
+            if expected_size is not None and image.size != expected_size:
+                raise ValueError(f"posting image dimensions changed: {path.name}")
+            image.verify()
+    except (OSError, SyntaxError) as exc:
+        raise ValueError(f"posting image is unreadable: {path.name}") from exc
+
+
 def list_existing_post_paths(post_dir: Path) -> list[str]:
-    """Sorted `photos/post/NN.jpg` paths for numbered posting copies already on disk."""
+    """Verify EVERY posted image, including preexisting copies, then return numeric order.
+
+    Unknown photo formats/names are errors, not silently skipped. Otherwise a
+    rogue original could remain in photos/post while status says verified.
+    """
     if not post_dir.is_dir():
         return []
-    names = sorted(
-        path.name
-        for path in post_dir.iterdir()
-        if path.is_file() and _POST_NAME.match(path.name)
-    )
-    return [f"photos/post/{name}" for name in names]
+    matches: list[tuple[int, str]] = []
+    for path in post_dir.iterdir():
+        if not path.is_file() or path.suffix.lower() not in SUPPORTED_SUFFIXES:
+            continue
+        match = _POST_NAME.fullmatch(path.name)
+        if not match:
+            raise ValueError(f"untracked image in photos/post: {path.name}")
+        _verify_post_image(path)
+        matches.append((int(match.group(1)), path.name))
+    matches.sort(key=lambda item: (item[0], item[1]))
+    return [f"photos/post/{name}" for _, name in matches]
 
 
 def next_post_index(post_dir: Path) -> int:
@@ -143,20 +165,10 @@ def prepare_item_photos(
     existing_posts = list_existing_post_paths(post_dir)
 
     if not inbox_files:
-        # Do not upgrade trust from filenames alone. Inspect retained posting
-        # bytes if metadata has not yet been persisted.
-        verified = bool(existing_posts)
-        for relative in existing_posts:
-            try:
-                with Image.open(item_dir / relative) as saved:
-                    verified = verified and not bool(saved.getexif())
-                    saved.verify()
-            except (OSError, ValueError):
-                verified = False
         return {
             "processed_at": _utc_now(),
             "processor": PROCESSOR_ID,
-            "metadata_status": "stripped_verified" if verified else "no_inbox_files",
+            "metadata_status": "stripped_verified" if existing_posts else "no_inbox_files",
             "config": {
                 "max_edge": config.max_edge,
                 "max_bytes": config.max_bytes,
@@ -173,11 +185,12 @@ def prepare_item_photos(
         index = start_index + offset
         dest = post_dir / f"{index:02d}.jpg"
         result = process_one(source, dest, config)
-        # Read output back before deleting/moving the only source.
-        with Image.open(dest) as check:
-            if check.getexif() or check.size != (result.width, result.height):
-                dest.unlink(missing_ok=True)
-                raise ValueError(f"sanitized photo verification failed: {dest}")
+        # Read and decode output fully before removing the sole source.
+        try:
+            _verify_post_image(dest, expected_size=(result.width, result.height))
+        except ValueError:
+            dest.unlink(missing_ok=True)
+            raise
         if result.bytes_after > config.max_bytes:
             dest.unlink(missing_ok=True)
             raise ValueError(f"photo exceeds requested byte limit: {dest}")
@@ -191,7 +204,10 @@ def prepare_item_photos(
             source.unlink()
 
     new_posts = [f"photos/post/{r.destination}" for r in results]
-    all_posts = existing_posts + new_posts
+    # Recheck the entire posted set. Never label a mixed collection verified.
+    all_posts = list_existing_post_paths(post_dir)
+    if set(all_posts) != set(existing_posts + new_posts):
+        raise ValueError("posting photo inventory changed during processing")
     report = {
         "processed_at": _utc_now(),
         "processor": PROCESSOR_ID,
@@ -216,10 +232,6 @@ def write_photo_report(item_dir: Path, report: dict) -> None:
     meta = normalize_meta(meta)
     meta.setdefault("photos", {})
     status = report["metadata_status"]
-    if report.get("skipped") == "empty_inbox":
-        # An empty run can preserve sanitized status only after reading
-        # existing posting files and verifying they contain no EXIF.
-        status = report["metadata_status"]
     meta["photos"].update(
         {
             "prepared_filenames": [Path(x).name for x in report["post"]],
