@@ -25,7 +25,7 @@ class FakeValues:
         self.updates = []
         self.clear_calls = 0
 
-    def get(self, *, spreadsheetId, range):
+    def get(self, *, spreadsheetId, range, valueRenderOption=None):
         def fetch():
             rows = [list(x) for x in self.table]
             if self.corrupt and self.updates:
