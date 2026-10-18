@@ -86,11 +86,12 @@ def load_meta(item_dir: Path) -> dict:
 
 
 def save_meta(item_dir: Path, meta: dict) -> None:
-    meta["updated_at"] = utc_now()
-    (item_dir / "meta.json").write_text(
-        json.dumps(meta, ensure_ascii=False, indent=2) + "\n",
-        encoding="utf-8",
-    )
+    """Validate, write a staging file and replace atomically on local disk."""
+    safe = validate_meta(meta)
+    safe["updated_at"] = utc_now()
+    temp = item_dir / "meta.json.tmp"
+    temp.write_text(json.dumps(safe, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    temp.replace(item_dir / "meta.json")
 
 
 INDEX_FIELDS = [
