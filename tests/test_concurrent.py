@@ -181,6 +181,35 @@ class ConcurrentChatTest(unittest.TestCase):
         with self.assertRaises(JournalConflict):
             project_target("test-cooler", "test-cooler", merged)
 
+    def test_asking_price_requires_listing_and_new_approval(self):
+        baseline = base()
+        before = replay(baseline, [])
+        invalid = edit(baseline, before, {"meta.price.list_price_rub": 2700}, 1)
+        with self.assertRaisesRegex(JournalError, "owner approval"):
+            replay(baseline, [invalid])
+        valid = edit(baseline, before, {
+            "meta.price.list_price_rub": 2700,
+            "meta.price.price_selected_by_owner": True,
+            "listing": "# Cooler\\nAsking price 2700 ₽. Pickup in Moscow.",
+        }, 2)
+        saved = replay(baseline, [valid])
+        self.assertEqual(saved.state["meta"]["price"]["list_price_rub"], 2700)
+        self.assertTrue(project_target("test-cooler", "test-cooler", saved))
+
+    def test_photo_count_is_derived_and_metadata_status_is_required(self):
+        baseline = base()
+        before = replay(baseline, [])
+        bad = edit(baseline, before, {
+            "meta.photos.prepared_filenames": ["01.jpg", "02.jpg"]}, 1)
+        with self.assertRaisesRegex(JournalError, "sanitized metadata"):
+            replay(baseline, [bad])
+        op = edit(baseline, before, {
+            "meta.photos.prepared_filenames": ["01.jpg", "02.jpg"],
+            "meta.photos.metadata_status": "stripped_verified",
+        }, 2)
+        merged = replay(baseline, [op])
+        self.assertEqual(merged.state["meta"]["photos"]["post_count"], 2)
+
     def test_concurrent_logs_do_not_mutate_original_state(self):
         baseline = base()
         old = copy.deepcopy(baseline)
