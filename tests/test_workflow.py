@@ -1,5 +1,4 @@
 """Offline contract test of the complete prepare → confirm → queue handoff."""
-import json
 import sys
 import tempfile
 import unittest
