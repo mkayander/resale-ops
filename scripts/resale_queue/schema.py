@@ -43,7 +43,7 @@ def normalize_meta(raw: dict) -> dict:
     photos["post_count"] = len(photos["prepared_filenames"])
     photos.setdefault("metadata_status", "not_processed")
 
-    platforms = meta.get("platforms", {})
+    platforms = meta.setdefault("platforms", {})
     if isinstance(platforms, list):
         meta["platforms"] = {
             name: {"mode": "prepare_only", "existing_status": "unknown",
