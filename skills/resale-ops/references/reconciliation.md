@@ -18,7 +18,7 @@ The stable item ID identifies one existing `queue/<item-id>/` folder, its existi
 ## Google provider notes
 
 - Drive: read the current existing file ID; update **that ID** using the provider's supported in-place update method, then read back contents. Library `overwrite=true` is not a portable alternative to Drive `files.update`. Temporary upload is allowed only in the selected private item folder and must be deleted after a verified update, never before.
-- Sheets: read the Queue headers and all IDs first. Reject duplicates; update one row with matching ID (patch only changed fields) or append a missing row, and then read it back. If several agents may update the same item, append into the per-item journal; Sheets values API does not offer a row-level compare-and-swap here and its row is a repairable projection.
+- Sheets: read the Queue headers and all IDs first. Reject duplicates; update one row with matching ID (patch only changed fields) or append a missing row, and then read it back. If several agents may update the same item, append into the per-item journal; separate items can be updated concurrently using server-positioned append and fresh ID lookups (see [drive-sheets-queue.md](drive-sheets-queue.md#parallel-chats-adding-or-removing-rows)); Sheets values API does not offer a row-level compare-and-swap here and its row is a repairable projection.
 - If any connector is unavailable, stop at that resource and report the missing capability. Don't reinterpret an unknown result as proof of success or failure.
 - Do not store credentials, tokens, exact home addresses, account data or user attachments in the public repository.
 
