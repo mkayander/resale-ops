@@ -110,8 +110,10 @@ class ReconciliationTest(unittest.TestCase):
         prior = snapshot(store, store.item_id)
         target = ready_target(store)
         store.listing = "Another editor changed this listing"
-        with self.assertRaises(ReconcileConflict):
+        with self.assertRaises(ReconcileConflict) as error:
             reconcile(store, store.item_id, prior, target)
+        self.assertEqual(error.exception.resource, "listing.md")
+        self.assertEqual(error.exception.completed, ())
         self.assertEqual(store.writes, [])
         self.assertEqual(store.listing, "Another editor changed this listing")
 
@@ -120,8 +122,10 @@ class ReconciliationTest(unittest.TestCase):
         prior = snapshot(store, store.item_id)
         target = ready_target(store)
         store.queue = {"id": store.item_id, "status": "published"}
-        with self.assertRaises(ReconcileConflict):
+        with self.assertRaises(ReconcileConflict) as error:
             reconcile(store, store.item_id, prior, target)
+        self.assertEqual(error.exception.resource, "Queue")
+        self.assertEqual(error.exception.completed, ("listing.md", "meta.json"))
         self.assertEqual(store.queue["status"], "published")
         self.assertEqual(store.writes, ["listing", "meta"])
 
