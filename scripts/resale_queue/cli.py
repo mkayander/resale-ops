@@ -54,7 +54,7 @@ def cmd_prepare_all(args: argparse.Namespace) -> None:
         inbox = item_dir / "inbox"
         if not inbox.is_dir() or not any(inbox.iterdir()):
             continue
-        report = prepare_item_photos(item_dir, config, move_originals=not args.no_archive)
+        report = prepare_item_photos(item_dir, config, move_originals=args.archive_originals)
         write_photo_report(item_dir, report)
         summaries.append({"item": item_dir.name, "files": len(report["files"])})
     print(json.dumps(summaries, ensure_ascii=False, indent=2))
