@@ -12,7 +12,7 @@ CHECKS = [
     [sys.executable, "-m", "coverage", "report",
      "--include=scripts/resale_queue/schema.py,scripts/resale_queue/meta.py,"
      "scripts/resale_queue/photos.py,scripts/resale_queue/sheets.py,"
-     "scripts/resale_queue/reconcile.py",
+     "scripts/resale_queue/reconcile.py,scripts/resale_queue/concurrent.py",
      "--fail-under=80"],
     [sys.executable, "scripts/verify_archive.py"],
 ]
