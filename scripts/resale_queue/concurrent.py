@@ -17,7 +17,7 @@ import uuid
 from dataclasses import dataclass
 from typing import Any, Protocol
 
-from .schema import normalize_meta, validate_meta
+from .schema import validate_meta
 from .reconcile import make_target
 
 _OP_ID = re.compile(r"^[0-9a-f]{32}$")
