@@ -9,6 +9,7 @@ from __future__ import annotations
 import copy
 import hashlib
 from dataclasses import dataclass
+from decimal import Decimal, InvalidOperation
 from typing import Protocol
 
 from .meta import INDEX_FIELDS
@@ -97,11 +98,18 @@ def _equal_queue(a: dict | None, b: dict | None) -> bool:
         return a is b
     # Google Sheets may render numeric values as 2900 or 2900.0.
     # All managed fields must agree; extra columns are outside our ownership.
-    return all(
-        str(a.get(field, "") if a.get(field) is not None else "") ==
-        str(b.get(field, "") if b.get(field) is not None else "")
-        for field in INDEX_FIELDS
-    )
+    def comparable(field: str, value: object) -> object:
+        if value is None or value == "":
+            return ""
+        if field in {"list_price_rub", "quick_sale_rub", "post_photo_count"}:
+            try:
+                return Decimal(str(value))
+            except InvalidOperation:
+                pass
+        return str(value)
+
+    return all(comparable(field, a.get(field)) == comparable(field, b.get(field))
+               for field in INDEX_FIELDS)
 
 
 def _equal_listing(a: str, b: str) -> bool:
