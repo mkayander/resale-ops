@@ -14,6 +14,11 @@ python scripts/check_package.py
 python -m unittest discover -s tests -v
 ```
 
+
+## Live reliability regression scenarios
+
+Added tests for legacy-to-v2 metadata normalization, ready-state requirements, ID-based Sheets upsert planning and duplicate detection, index/folder ID drift, and photo output verification before staging originals are discarded. No real customer Drive or Sheets should be mutated by these tests. `sheet-push` no longer clears `A:Z`; test partial indexes and repeated updates using fake connector responses before touching a user workspace. Checks cover logic, not an end-to-end live Google OAuth guarantee. Concurrency across independent clients remains an explicit limitation and requires serialization.
+
 ## Ручная приёмка перед публичным релизом
 
 Security review 2026-10-15 выполнено статически по всему пакету и первичным источникам; специализированный сервис Security Review был недоступен, использован общий субагент и проверка основного агента. Запускаемый профиль ru-marketplace-mcp удалён: ограничение источников не ограничивало живые инструменты. Установка стороннего сервера и MCP-handshake не выполнялись. Критерии будущего допуска — в [инструкции интеграции](RU-MARKETPLACE-MCP.md). Нельзя считать простой успешный запрос цены доказательством допустимости автоматизации или обработки блокировок.
