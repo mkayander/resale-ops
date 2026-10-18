@@ -48,7 +48,12 @@ class ItemStore(Protocol):
 
 
 class ReconcileConflict(RuntimeError):
-    """Somebody changed the persisted resource since the initial snapshot."""
+    """Somebody changed a resource; expose verified earlier writes for recovery."""
+
+    def __init__(self, resource: str, completed: tuple[str, ...]):
+        super().__init__(f"{resource}: external change detected; verified earlier: {completed}")
+        self.resource = resource
+        self.completed = completed
 
 
 class ReconcileFailure(RuntimeError):
@@ -156,7 +161,7 @@ def reconcile(store: ItemStore, item_id: str, before: Snapshot, target: Target) 
             skipped.append(label)
             continue
         if not equal(actual, previous):
-            raise ReconcileConflict(f"{label}: external change detected; no write performed")
+            raise ReconcileConflict(label, tuple(completed))
         try:
             write(expected)
         except Exception as exc:
