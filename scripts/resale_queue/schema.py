@@ -10,9 +10,9 @@ import re
 from pathlib import PurePosixPath
 
 SCHEMA_VERSION = 2
-STATUSES = {"draft", "researching", "ready", "posted", "published"}
+STATUSES = {"draft", "researching", "ready", "posted", "published", "sold", "archived"}
 ID_PATTERN = re.compile(r"^[a-z0-9]+(?:-[a-z0-9]+)*$")
-POST_NAME = re.compile(r"^\d{2}(?:[_-][^/\\]+)?\.jpe?g$", re.IGNORECASE)
+POST_NAME = re.compile(r"^\d{2,}(?:[_-][^/\\]+)?\.jpe?g$", re.IGNORECASE)
 
 
 def normalize_meta(raw: dict) -> dict:

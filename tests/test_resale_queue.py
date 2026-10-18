@@ -48,6 +48,71 @@ class ResaleQueueTest(unittest.TestCase):
             self.assertEqual(meta["photos"]["metadata_status"], "stripped_verified")
             self.assertTrue((item_dir / "photos" / "post" / "01.jpg").is_file())
 
+    def test_existing_exif_blocks_mixed_collection_and_keeps_inbox_source(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            item = init_item(Path(tmp), "mixed-exif")
+            post_dir = item / "photos/post"
+            exif = Image.Exif()
+            exif[0x010E] = "private information"
+            Image.new("RGB", (90, 60), "red").save(post_dir / "01.jpg", exif=exif)
+            incoming = item / "inbox/new.jpg"
+            Image.new("RGB", (90, 60), "green").save(incoming)
+
+            with self.assertRaisesRegex(ValueError, "without EXIF"):
+                prepare_item_photos(item, PhotoProcessConfig(max_bytes=200_000))
+
+            self.assertTrue(incoming.exists())
+            self.assertFalse((post_dir / "02.jpg").exists())
+            meta = json.loads((item / "meta.json").read_text(encoding="utf-8"))
+            self.assertNotEqual(meta["photos"]["metadata_status"], "stripped_verified")
+
+    def test_existing_untracked_jpeg_is_not_ignored(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            item = init_item(Path(tmp), "untracked-photo")
+            Image.new("RGB", (40, 40), "blue").save(item / "photos/post/raw.jpg")
+            Image.new("RGB", (40, 40), "blue").save(item / "inbox/new.png")
+            with self.assertRaisesRegex(ValueError, "untracked"):
+                prepare_item_photos(item, PhotoProcessConfig(max_bytes=200_000))
+            self.assertTrue((item / "inbox/new.png").is_file())
+
+    def test_mixed_verified_photos_produce_verified_report(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            item = init_item(Path(tmp), "verified-mixed")
+            Image.new("RGB", (40, 40), "blue").save(item / "photos/post/01.jpg")
+            Image.new("RGB", (40, 40), "green").save(item / "inbox/new.png")
+            report = prepare_item_photos(item, PhotoProcessConfig(max_bytes=200_000))
+            self.assertEqual(report["metadata_status"], "stripped_verified")
+            self.assertEqual(report["post"], ["photos/post/01.jpg", "photos/post/02.jpg"])
+            write_photo_report(item, report)
+            meta = json.loads((item / "meta.json").read_text(encoding="utf-8"))
+            self.assertEqual(meta["photos"]["post_count"], 2)
+
+    def test_photo_names_continue_past_99_and_keep_numeric_order(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            item = init_item(Path(tmp), "many-photos")
+            post = item / "photos/post"
+            Image.new("RGB", (40, 40), "blue").save(post / "99.jpg")
+            Image.new("RGB", (40, 40), "red").save(post / "02.jpg")
+            Image.new("RGB", (40, 40), "green").save(item / "inbox/new.png")
+            report = prepare_item_photos(item, PhotoProcessConfig(max_bytes=200_000))
+            self.assertEqual(report["post"], [
+                "photos/post/02.jpg", "photos/post/99.jpg", "photos/post/100.jpg"
+            ])
+            write_photo_report(item, report)
+            meta = json.loads((item / "meta.json").read_text(encoding="utf-8"))
+            self.assertEqual(meta["photos"]["prepared_filenames"][-1], "100.jpg")
+            self.assertEqual(meta["photos"]["post_count"], 3)
+
+    def test_sold_and_archived_preserve_metadata_without_ready_requirements(self):
+        for status in ("sold", "archived"):
+            with self.subTest(status=status):
+                meta = validate_meta({"id": "test-item", "status": status,
+                                      "notes": "owner_reported"})
+                self.assertEqual(meta["status"], status)
+                self.assertEqual(to_queue_row(meta, "test-item")["status"], status)
+        with self.assertRaisesRegex(ValueError, "invalid item status"):
+            validate_meta({"id": "test-item", "status": "deleted"})
+
     def test_incremental_inbox_appends_post_numbers(self):
         with tempfile.TemporaryDirectory() as tmp:
             item_dir = init_item(Path(tmp), "incremental")

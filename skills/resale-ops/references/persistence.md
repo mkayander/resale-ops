@@ -31,13 +31,15 @@ Spreadsheet **Queue** tab = dashboard (`status`, prices, `folder_url`). Full cop
    - Upload selected results to `photos/post/` and verify that each expected file exists and is usable.
    - **Space-saving default:** delete originals from `inbox/` only after corresponding sanitized posting copies are successfully verified. Keep `inbox/` empty between runs. Do not retain `photos/original/` or second photo copies in Drive. If sanitization/upload fails, keep staging inputs until resolved; do not delete the sole existing copy.
    - Photos supplied in chat should be processed from the temporary workspace and uploaded directly to `photos/post/` without uploading originals to Drive.
-   - Set `meta.json` `photos.metadata_status` to `stripped_verified` only after sanitization actually ran.
+   - Set `meta.json` `photos.metadata_status` to `stripped_verified` only after every file in the final `photos/post/` inventory (including preexisting files) has been inspected as a readable JPEG without EXIF. Any unsafe, invalid, or untracked image blocks the verified status; retain unprocessed inbox sources.
 4. **Research & copy** — update `listing.md` and `meta.json`; set `status` (`draft` → `researching` → `ready`).
 5. **Index** — upsert a row on the **Queue** sheet via Sheets MCP (or append/update by `id`). Do not require `queue-index.csv` on disk.
 6. **Handoff** — PC posting uses cloud `photos/post/` (web Drive or sync). List file names and folder link; no marketplace automation in `prepare_only`.
 7. **Reconcile** — after handoff or later changes, follow the state reconciliation below before reporting completion.
 
-For **two chats editing the same item**, the authority must be an append-only change journal (see [concurrency.md](concurrency.md)); mutable files and the Queue become projections and can temporarily lag. Parallel edits to *different* items require only stable-ID Queue operations and server-positioned appends (see [drive-sheets-queue.md](drive-sheets-queue.md#parallel-chats-adding-or-removing-rows)), not a shared journal or lock. The old per-file reconciliation does not constitute an atomic multi-chat lock. Journal bootstrap is single-writer and must be completed before parallel modifications to that item.\n\nThe exact conflict-aware recovery sequence for partial Drive/Sheets writes is in [reconciliation.md](reconciliation.md). Preserve the original snapshot/target across retries; do not silently rebaseline a conflicting external edit. The Python reference implementation is an offline, provider-neutral helper and is not a live ChatGPT connector adapter.
+For **two chats editing the same item**, the authority must be an append-only change journal (see [concurrency.md](concurrency.md)); mutable files and the Queue become projections and can temporarily lag. Parallel edits to *different* items require only stable-ID Queue operations and server-positioned appends (see [drive-sheets-queue.md](drive-sheets-queue.md#parallel-chats-adding-or-removing-rows)), not a shared journal or lock. The old per-file reconciliation does not constitute an atomic multi-chat lock. Journal bootstrap is single-writer and must be completed before parallel modifications to that item.
+
+The exact conflict-aware recovery sequence for partial Drive/Sheets writes is in [reconciliation.md](reconciliation.md). Preserve the original snapshot/target across retries; do not silently rebaseline a conflicting external edit. The Python reference implementation is an offline, provider-neutral helper and is not a live ChatGPT connector adapter.
 
 ## Reconcile state after handoff or changes
 
@@ -73,7 +75,12 @@ Owners with **Google Drive for desktop** (or similar) may set `local.resale_root
 | `draft` | Folder created; photos or copy incomplete |
 | `researching` | Identification/pricing in progress |
 | `ready` | `listing.md` complete, `photos/post/` sanitized, prices set |
-| `posted` | Owner published (URLs in `posted`) |
+| `posted` | Publication confirmed or owner-reported, with evidence provenance |
+| `published` | Legacy equivalent; preserve existing records and evidence provenance |
+| `sold` | Owner reports sale completed; does **not** imply marketplace listing removal |
+| `archived` | Item intentionally removed from active queue; retains Drive files and history |
+
+Sale completion and archive are **record-keeping statuses only**. Record source as owner-reported unless verified by an admitted method. Do not delete Queue rows, Drive files, or platform listings because these status values changed. A sold or archived item can retain historical photos and pricing; these statuses do not automatically trigger the `ready` gate again.
 
 ## Boundaries
 

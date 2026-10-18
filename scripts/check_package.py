@@ -106,6 +106,11 @@ def check(root=ROOT):
     for entry in skill.rglob("*"):
         reject_redirects(entry)
     read_frontmatter(skill / "SKILL.md")
+    # Escaped paragraph delimiters are not Markdown paragraph breaks and can
+    # silently concatenate important agent instructions.
+    for prose in (skill / "SKILL.md", skill / "references/persistence.md"):
+        require("\\n\\n" not in prose.read_text(encoding="utf-8"),
+                f"Literal escaped paragraph breaks in {prose}")
     require((skill / "LICENSE").read_bytes() == (root / "LICENSE").read_bytes(), "Standalone skill must carry the complete license")
     check_links(root, skill)
     portable = json.loads((root / "plugin.json").read_text(encoding="utf-8"))
