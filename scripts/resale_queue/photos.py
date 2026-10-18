@@ -217,10 +217,9 @@ def write_photo_report(item_dir: Path, report: dict) -> None:
     meta.setdefault("photos", {})
     status = report["metadata_status"]
     if report.get("skipped") == "empty_inbox":
-        previously = meta["photos"].get("metadata_status", "not_processed")
-        status = "stripped_verified" if (
-            previously == "stripped_verified" or status == "stripped_verified"
-        ) else previously
+        # An empty run can preserve sanitized status only after reading
+        # existing posting files and verifying they contain no EXIF.
+        status = report["metadata_status"]
     meta["photos"].update(
         {
             "prepared_filenames": [Path(x).name for x in report["post"]],
