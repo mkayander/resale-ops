@@ -6,7 +6,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "scripts"))
 
-from resale_queue.sheets import upsert_rows, SHEET_HEADERS
+from resale_queue.sheets import upsert_rows, SHEET_HEADERS, QueueConflict
 
 
 class FakeOperation:
@@ -27,11 +27,24 @@ class FakeValues:
         self.numeric_as_float = numeric_as_float
         self.read_options = []
         self.updates = []
+        self.appends = []
         self.clear_calls = 0
+        self.before_identity = None
+        self.before_append = None
+        self.after_batch_update = None
 
     def get(self, *, spreadsheetId, range, valueRenderOption=None):
         def fetch():
             self.read_options.append(valueRenderOption)
+            import re
+            identity = re.search(r"!A(\d+)$", range)
+            if identity:
+                if self.before_identity:
+                    callback, self.before_identity = self.before_identity, None
+                    callback(self)
+                index = int(identity.group(1)) - 1
+                return {"values": [[self.table[index][0]]] if
+                        index < len(self.table) and self.table[index] else []}
             rows = [list(x) for x in self.table]
             if self.numeric_as_float:
                 for row in rows[1:]:
@@ -42,24 +55,42 @@ class FakeValues:
                 for row in rows[1:]:
                     if len(row) > 4 and isinstance(row[4], (int, float)):
                         row[4] = f"{row[4]:,} RUB"
-
             if self.corrupt and self.updates:
                 rows[-1][1] = "externally-changed"
             return {"values": rows}
         return FakeOperation(fetch)
 
-    def update(self, *, spreadsheetId, range, valueInputOption, body):
+    def batchUpdate(self, *, spreadsheetId, body):
         def save():
             if self.fail_update:
                 raise RuntimeError("simulated connector failure")
-            self.updates.append(range)
             import re
-            match = re.search(r"!A(\d+):M\d+$", range)
-            assert match, range
-            index = int(match.group(1)) - 1
-            while len(self.table) <= index:
-                self.table.append([])
-            self.table[index] = list(body["values"][0])
+            for data in body["data"]:
+                match = re.search(r"!([A-M])(\d+)$", data["range"])
+                assert match, data["range"]
+                row_index = int(match.group(2)) - 1
+                col_index = ord(match.group(1)) - ord("A")
+                while len(self.table[row_index]) <= col_index:
+                    self.table[row_index].append("")
+                self.table[row_index][col_index] = data["values"][0][0]
+                self.updates.append(data["range"])
+            if self.after_batch_update:
+                callback, self.after_batch_update = self.after_batch_update, None
+                callback(self)
+            return {}
+        return FakeOperation(save)
+
+    def append(self, *, spreadsheetId, range, valueInputOption,
+               insertDataOption, body):
+        def save():
+            if self.fail_update:
+                raise RuntimeError("simulated connector failure")
+            if self.before_append:
+                callback, self.before_append = self.before_append, None
+                callback(self)
+            assert insertDataOption == "INSERT_ROWS"
+            self.table.append(list(body["values"][0]))
+            self.appends.append(self.table[-1][0])
             return {}
         return FakeOperation(save)
 
@@ -98,7 +129,7 @@ class CloudSyncRegressionTest(unittest.TestCase):
         upsert_rows(FakeService(v), "test", "Queue", [
             {"id": "my-item", "status": "ready", "list_price_rub": 2900}
         ])
-        self.assertEqual(v.read_options, ["UNFORMATTED_VALUE", "UNFORMATTED_VALUE"])
+        self.assertEqual(v.read_options, ["UNFORMATTED_VALUE"] * 3)
         self.assertEqual(v.table[1][4], 2900)
 
     def test_partial_index_does_not_delete_other_items(self):
@@ -145,14 +176,14 @@ class CloudSyncRegressionTest(unittest.TestCase):
 
     def test_failed_write_does_not_clear(self):
         v = FakeValues([SHEET_HEADERS, ["other", "ready"]], fail_update=True)
-        with self.assertRaisesRegex(RuntimeError, "simulated connector"):
+        with self.assertRaisesRegex(QueueConflict, "failed or is unverified"):
             upsert_rows(FakeService(v), "test", "Queue", [{"id": "new"}])
         self.assertEqual(len(v.table), 2)
         self.assertEqual(v.clear_calls, 0)
 
     def test_readback_detects_changed_row(self):
         v = FakeValues([SHEET_HEADERS, ["one", "draft"]], corrupt=True)
-        with self.assertRaisesRegex(RuntimeError, "readback mismatch"):
+        with self.assertRaisesRegex(QueueConflict, "readback mismatch"):
             upsert_rows(FakeService(v), "test", "Queue",
                         [{"id": "one", "status": "ready"}])
 
