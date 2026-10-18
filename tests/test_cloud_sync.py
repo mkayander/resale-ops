@@ -18,11 +18,13 @@ class FakeOperation:
 
 
 class FakeValues:
-    def __init__(self, initial, fail_update=False, corrupt=False, formatted_readback=False):
+    def __init__(self, initial, fail_update=False, corrupt=False,
+                 formatted_readback=False, numeric_as_float=False):
         self.table = [list(row) for row in initial]
         self.fail_update = fail_update
         self.corrupt = corrupt
         self.formatted_readback = formatted_readback
+        self.numeric_as_float = numeric_as_float
         self.read_options = []
         self.updates = []
         self.clear_calls = 0
@@ -31,6 +33,11 @@ class FakeValues:
         def fetch():
             self.read_options.append(valueRenderOption)
             rows = [list(x) for x in self.table]
+            if self.numeric_as_float:
+                for row in rows[1:]:
+                    for index in (4, 5, 7):
+                        if index < len(row) and isinstance(row[index], int):
+                            row[index] = float(row[index])
             if self.formatted_readback and self.updates and valueRenderOption != "UNFORMATTED_VALUE":
                 for row in rows[1:]:
                     if len(row) > 4 and isinstance(row[4], (int, float)):
@@ -100,6 +107,14 @@ class CloudSyncRegressionTest(unittest.TestCase):
         self.assertEqual(len(v.table), 3)
         self.assertEqual(v.table[1][0], "existing")
         self.assertEqual(v.table[2][0], "new")
+
+    def test_equivalent_numeric_float_readback_is_accepted(self):
+        v = FakeValues([SHEET_HEADERS, ["my-item", "draft"]], numeric_as_float=True)
+        self.assertEqual(upsert_rows(FakeService(v), "test", "Queue", [
+            {"id": "my-item", "status": "ready", "list_price_rub": 2900,
+             "quick_sale_rub": 1900, "post_photo_count": 3}
+        ]), 1)
+        self.assertEqual(v.table[1][4], 2900)
 
     def test_partial_patch_retains_price_photo_count_and_notes(self):
         existing = [SHEET_HEADERS, [
