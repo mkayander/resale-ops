@@ -8,6 +8,8 @@ import re
 from datetime import datetime, timezone
 from pathlib import Path
 
+from .schema import normalize_meta, validate_meta, to_queue_row
+
 SLUG_RE = re.compile(r"^[a-z0-9]+(?:-[a-z0-9]+)*$")
 
 
@@ -30,18 +32,21 @@ def default_meta(item_id: str) -> dict:
         "status": "draft",
         "created_at": now,
         "updated_at": now,
+        "schema_version": 2,
         "title": "",
         "city": "",
-        "list_price_rub": None,
-        "quick_sale_rub": None,
-        "platforms": ["avito", "youla"],
+        "price": {"currency": "RUB", "list_price_rub": None, "quick_sale_rub": None, "price_selected_by_owner": False},
+        "platforms": {"avito": {"mode": "prepare_only", "existing_status": "unknown", "uploaded_photo_count": 0}, "youla": {"mode": "prepare_only", "existing_status": "unknown", "uploaded_photo_count": 0}},
         "photos": {
-            "post": [],
+            "prepared_filenames": [],
+            "post_count": 0,
             "metadata_status": "not_processed",
             "processed_at": None,
             "processor": None,
         },
         "folder_url": "",
+        "pickup_location": None,
+        "delivery_terms": None,
         "sheet_row": None,
         "posted": {},
         "notes": "",
@@ -56,7 +61,6 @@ def init_item(root: Path, slug: str) -> Path:
     for relative in (
         "inbox",
         "photos/post",
-        "photos/original",
     ):
         (item_dir / relative).mkdir(parents=True, exist_ok=True)
     meta_path = item_dir / "meta.json"
@@ -78,15 +82,16 @@ def load_meta(item_dir: Path) -> dict:
     path = item_dir / "meta.json"
     if not path.is_file():
         raise FileNotFoundError(f"Missing meta.json in {item_dir}")
-    return json.loads(path.read_text(encoding="utf-8"))
+    return normalize_meta(json.loads(path.read_text(encoding="utf-8")))
 
 
 def save_meta(item_dir: Path, meta: dict) -> None:
-    meta["updated_at"] = utc_now()
-    (item_dir / "meta.json").write_text(
-        json.dumps(meta, ensure_ascii=False, indent=2) + "\n",
-        encoding="utf-8",
-    )
+    """Validate, write a staging file and replace atomically on local disk."""
+    safe = validate_meta(meta)
+    safe["updated_at"] = utc_now()
+    temp = item_dir / "meta.json.tmp"
+    temp.write_text(json.dumps(safe, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    temp.replace(item_dir / "meta.json")
 
 
 INDEX_FIELDS = [
@@ -118,25 +123,10 @@ def build_index(root: Path) -> list[dict]:
         if not meta_path.is_file():
             continue
         meta = json.loads(meta_path.read_text(encoding="utf-8"))
-        photos = meta.get("photos") or {}
-        post = photos.get("post") or []
-        rows.append(
-            {
-                "id": meta.get("id", item_dir.name),
-                "status": meta.get("status", "draft"),
-                "title": meta.get("title", ""),
-                "city": meta.get("city", ""),
-                "list_price_rub": meta.get("list_price_rub"),
-                "quick_sale_rub": meta.get("quick_sale_rub"),
-                "metadata_status": photos.get("metadata_status", ""),
-                "post_photo_count": len(post),
-                "prepared_at": photos.get("processed_at") or meta.get("created_at"),
-                "updated_at": meta.get("updated_at", ""),
-                "folder_name": item_dir.name,
-                "folder_url": meta.get("folder_url") or meta.get("drive_folder_url", ""),
-                "notes": meta.get("notes", ""),
-            }
-        )
+        row = to_queue_row(meta, item_dir.name)
+        if row["id"] != item_dir.name:
+            raise ValueError(f"folder/metadata ID mismatch for {item_dir.name}")
+        rows.append(row)
     return rows
 
 

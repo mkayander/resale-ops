@@ -70,6 +70,13 @@ Do not send photos to another recognition service without consent. Do not make
 folders public or claim metadata was removed based only on a proposed operation.
 Cloud access never authorizes marketplace login, form entry or publication.
 
+
+### Safety of repeat runs
+
+The local `sheet-push` is a non-destructive ID-based upsert: it checks existing headers and IDs, updates only matching rows, appends missing rows, then reads the affected values back. It refuses duplicate IDs. It does not remove rows absent from the local index, and must not be used as a way to delete stale cloud items. Since Sheets API has no compare-and-swap for individual cell edits here, run one writer at a time.
+
+Current local metadata uses nested v2 `price` and `photos` fields. The local indexer normalizes older flat schemas in memory. Do not publish a record with `ready` unless asking price, handoff terms and sanitized photos are confirmed. `photos/post/` holds the only durable photo copies; `--archive-originals` is a deliberate **local-only opt-in**, not for the normal cloud flow.
+
 ## Optional: desktop sync and local Python utilities
 
 Only when the owner chooses local sync, use Google Drive for desktop or another

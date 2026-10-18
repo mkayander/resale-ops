@@ -12,7 +12,7 @@ from PIL import Image, ImageOps
 
 PROCESSOR_ID = "resale_queue/1.0.0"
 SUPPORTED_SUFFIXES = {".jpg", ".jpeg", ".png", ".webp"}
-_POST_NAME = re.compile(r"^(\d{2})\.jpg$", re.IGNORECASE)
+_POST_NAME = re.compile(r"^(\d{2})(?:[_-][A-Za-z0-9_.-]+)?\.jpg$", re.IGNORECASE)
 
 
 @dataclass(frozen=True)
@@ -129,9 +129,9 @@ def prepare_item_photos(
     item_dir: Path,
     config: PhotoProcessConfig,
     *,
-    move_originals: bool = True,
+    move_originals: bool = False,
 ) -> dict:
-    """Move inbox photos to photos/post as stripped JPEGs; optionally archive originals."""
+    """Sanitize photos, verify outputs, then discard staging originals by default."""
     inbox = item_dir / "inbox"
     post_dir = item_dir / "photos" / "post"
     original_dir = item_dir / "photos" / "original"
@@ -143,10 +143,20 @@ def prepare_item_photos(
     existing_posts = list_existing_post_paths(post_dir)
 
     if not inbox_files:
+        # Do not upgrade trust from filenames alone. Inspect retained posting
+        # bytes if metadata has not yet been persisted.
+        verified = bool(existing_posts)
+        for relative in existing_posts:
+            try:
+                with Image.open(item_dir / relative) as saved:
+                    verified = verified and not bool(saved.getexif())
+                    saved.verify()
+            except (OSError, ValueError):
+                verified = False
         return {
             "processed_at": _utc_now(),
             "processor": PROCESSOR_ID,
-            "metadata_status": "stripped_verified" if existing_posts else "no_inbox_files",
+            "metadata_status": "stripped_verified" if verified else "no_inbox_files",
             "config": {
                 "max_edge": config.max_edge,
                 "max_bytes": config.max_bytes,
@@ -162,7 +172,16 @@ def prepare_item_photos(
     for offset, source in enumerate(inbox_files):
         index = start_index + offset
         dest = post_dir / f"{index:02d}.jpg"
-        results.append(process_one(source, dest, config))
+        result = process_one(source, dest, config)
+        # Read output back before deleting/moving the only source.
+        with Image.open(dest) as check:
+            if check.getexif() or check.size != (result.width, result.height):
+                dest.unlink(missing_ok=True)
+                raise ValueError(f"sanitized photo verification failed: {dest}")
+        if result.bytes_after > config.max_bytes:
+            dest.unlink(missing_ok=True)
+            raise ValueError(f"photo exceeds requested byte limit: {dest}")
+        results.append(result)
         if move_originals:
             target = original_dir / source.name
             if target.exists():
@@ -193,15 +212,26 @@ def write_photo_report(item_dir: Path, report: dict) -> None:
     meta = {}
     if meta_path.is_file():
         meta = json.loads(meta_path.read_text(encoding="utf-8"))
+    from .schema import normalize_meta, validate_meta
+    meta = normalize_meta(meta)
     meta.setdefault("photos", {})
+    status = report["metadata_status"]
+    if report.get("skipped") == "empty_inbox":
+        # An empty run can preserve sanitized status only after reading
+        # existing posting files and verifying they contain no EXIF.
+        status = report["metadata_status"]
     meta["photos"].update(
         {
-            "post": report["post"],
-            "metadata_status": report["metadata_status"],
+            "prepared_filenames": [Path(x).name for x in report["post"]],
+            "post_count": len(report["post"]),
+            "metadata_status": status,
             "processed_at": report["processed_at"],
             "processor": report["processor"],
             "last_run": report,
         }
     )
     meta["updated_at"] = report["processed_at"]
-    meta_path.write_text(json.dumps(meta, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    meta = validate_meta(meta)
+    tmp = meta_path.with_suffix(".json.tmp")
+    tmp.write_text(json.dumps(meta, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    tmp.replace(meta_path)
