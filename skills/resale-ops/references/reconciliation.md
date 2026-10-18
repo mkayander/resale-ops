@@ -1,6 +1,6 @@
 # Deterministic queue reconciliation
 
-Use this procedure when preparing an item, recording owner-reported platform actions, or changing its listing. It protects **the saved records** only. It does not authorize access to a marketplace or repeating a submission.
+Use this procedure when preparing an item, recording owner-reported platform actions, or changing its listing. For concurrent chats, **first** use [concurrency.md](concurrency.md) to append operations; this file describes only how to materialize/retry projections. Using this protocol without the journal is strictly single-writer only. It protects **the saved records** only. It does not authorize access to a marketplace or repeating a submission.
 
 ## Single-item unit of work
 
@@ -18,7 +18,7 @@ The stable item ID identifies one existing `queue/<item-id>/` folder, its existi
 ## Google provider notes
 
 - Drive: read the current existing file ID; update **that ID** using the provider's supported in-place update method, then read back contents. Library `overwrite=true` is not a portable alternative to Drive `files.update`. Temporary upload is allowed only in the selected private item folder and must be deleted after a verified update, never before.
-- Sheets: read the Queue headers and all IDs first. Reject duplicates; update one row with matching ID (patch only changed fields) or append a missing row, and then read it back. If several agents may update the same item, serialize them: Sheets values API does not offer a row-level compare-and-swap here.
+- Sheets: read the Queue headers and all IDs first. Reject duplicates; update one row with matching ID (patch only changed fields) or append a missing row, and then read it back. If several agents may update the same item, append into the per-item journal; Sheets values API does not offer a row-level compare-and-swap here and its row is a repairable projection.
 - If any connector is unavailable, stop at that resource and report the missing capability. Don't reinterpret an unknown result as proof of success or failure.
 - Do not store credentials, tokens, exact home addresses, account data or user attachments in the public repository.
 
