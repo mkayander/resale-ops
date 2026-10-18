@@ -32,6 +32,12 @@ For **phone → PC**, use **cloud** [persistence](references/persistence.md): qu
 
 ### 1. Establish inputs and mode
 
+For an explicit request to open the owner's Resale Ops browser, use the
+[persistent Chrome launch flow](references/browser.md#persistent-chrome-launch-windows-macos-and-linux):
+installed Chrome, port 9222 and the same dedicated OS-specific profile, not an
+in-app browser. Launch alone authorizes no account inspection or marketplace
+action; the owner handles login manually.
+
 Load owner [locations](references/locations.md): **project rules/memory first**, then the private `.resale-locations.json` file inside the `Resale` Drive folder via MCP if needed; local JSON paths only when present—never require disk access. Apply `defaults` only when the user did not specify city/language/platforms.
 
 Read the platform registry and record `prepare_only` or a named, previously admitted adapter for each platform. Without an explicit owner request and a named, admitted method, do not connect marketplace MCP, use the owner’s account, or automate forms/upload. Anonymous public research via search or unauthenticated page views is permitted per [account safety](references/account-safety.md).

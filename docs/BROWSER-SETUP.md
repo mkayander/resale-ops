@@ -4,6 +4,25 @@
 
 Разрешённые методы и основания описаны в [реестре площадок](../skills/resale-ops/references/platforms.md). Наличие MCP и согласие владельца аккаунта не заменяют разрешения самой площадки.
 
+## Chrome с постоянным профилем
+
+По запросу открыть браузер запускайте установленный Google Chrome с портом
+`9222` и отдельным постоянным профилем Resale Ops. Команды для Windows / WSL,
+macOS и Linux — в [инструкции запуска](../skills/resale-ops/references/browser.md#persistent-chrome-launch-windows-macos-and-linux).
+Встроенный браузер клиента не подставляется вместо Chrome.
+
+| ОС | Папка профиля |
+| --- | --- |
+| Windows / Windows Chrome из WSL | `%LOCALAPPDATA%\ResaleOps\ChromeProfile` |
+| macOS | `~/Library/Application Support/ResaleOps/ChromeProfile` |
+| Linux | `${XDG_CONFIG_HOME:-$HOME/.config}/resale-ops/chrome-profile` |
+
+Всегда используйте ту же папку, без TEMP или /tmp. Первый вход выполняется
+вручную; данные профиля сохраняются между запусками, но сайт может завершить
+сессию. Прежний временный профиль автоматически не переносится, cookies и токены
+не копируются. Профиль хранится вне репозитория и архивов плагина.
+Сам запуск не разрешает агенту подключение к аккаунту или действия на площадке.
+
 ## Разработка будущего разрешённого адаптера
 
 [Playwright MCP](https://github.com/microsoft/playwright-mcp) и [Chrome DevTools MCP](https://github.com/ChromeDevTools/chrome-devtools-mcp) могут читать формы, вводить поля и загружать файлы. Это возможности инструментов, не разрешение использовать их на любом сайте.
