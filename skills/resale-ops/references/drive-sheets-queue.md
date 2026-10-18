@@ -73,9 +73,20 @@ Cloud access never authorizes marketplace login, form entry or publication.
 
 ### Safety of repeat runs
 
-The local `sheet-push` is a non-destructive ID-based upsert: it checks existing headers and IDs, updates only matching rows, appends missing rows, then reads the affected values back. It refuses duplicate IDs. It does not remove rows absent from the local index, and must not be used as a way to delete stale cloud items. Since Sheets API has no compare-and-swap for individual cell edits here, run one writer at a time.
+The local `sheet-push` is a non-destructive ID-based upsert: it checks existing headers and IDs, updates only matching rows, appends missing rows, then reads the affected values back. It refuses duplicate IDs. It does not remove rows absent from the local index, and must not be used as a way to delete stale cloud items. Parallel edits of **different items** are supported by using server-positioned appends and a fresh ID lookup per item. Do not cache row indexes. A physical deletion exactly between identity check and positional update is still not atomic; avoid deleting rows during writes, or adopt a row-metadata-based provider adapter.
 
 Current local metadata uses nested v2 `price` and `photos` fields. The local indexer normalizes older flat schemas in memory. Do not publish a record with `ready` unless asking price, handoff terms and sanitized photos are confirmed. `photos/post/` holds the only durable photo copies; `--archive-originals` is a deliberate **local-only opt-in**, not for the normal cloud flow.
+
+## Parallel chats adding or removing rows
+
+The common case is **Chat A changes item A while Chat B adds item B**. Keep the Queue as a dashboard indexed by stable item ID, not row number. There is no need to initialize the per-item journal for unrelated items.
+
+- **New item:** check for an existing ID, then append through Sheets itself. In a local Sheets client call `spreadsheets.values.append` with `insertDataOption=INSERT_ROWS`; for connected tools exposing only `batchUpdate`, use `appendCells` with `sheetId` (never a guessed `start.rowIndex`). Read the sheet again and verify exactly one row with the item ID. If the append returns an ambiguous error, search by ID before considering a retry. Multiple appenders of *different* IDs get distinct allocated rows.
+- **Update existing item:** read the current ID column and locate exactly one matching row; verify that exact ID again before the write. Patch **only changed columns**, not `A:M` or the full sheet; read back the row by ID, *not* the previously remembered coordinate. Reject duplicate IDs and ambiguous readback. Other items' field changes must be preserved.
+- **Rows inserted, reordered or physically deleted in another chat:** discard cached row positions and resolve the target ID afresh. If its position changed after lookup, stop and refresh rather than risk a write to the wrong item. A narrow race remains if a physical deletion happens **between the final identity check and the positional update**: the ordinary Sheets values interface does not offer an atomic conditional row update. For reliable simultaneous physical deletion, a dedicated provider adapter with row-associated developer metadata and `batchUpdateByDataFilter` is required; the default ChatGPT connector does not currently expose that operation in this project. Until then, perform bulk physical deletes while other chat writers are idle. Prefer archiving/filtering during routine work.
+- **Deleted rows and data authority:** the Drive item folder, not the Queue row, is the source of item facts. Removing a Queue row does *not* delete its Drive item; the next explicit sync of that item can recreate the row. Permanent item deletion must be a separate owner-authorized workflow, not inferred from an absent spreadsheet row. A missing ID should never trigger deleting any other row.
+
+This is a practical concurrency improvement, not a cross-service database transaction. There is no always-on backend, global sheet lock, new Google login or live Google dependency in mandatory CI. If two chats intentionally edit **the same item**, consult [concurrency.md](concurrency.md) for its opt-in append-only journal.
 
 ## Optional: desktop sync and local Python utilities
 
@@ -92,8 +103,6 @@ python scripts/resale_queue.py --root /path/to/Resale index
 Optional local Sheets API upload needs a service account, Sheets API access and
 sharing the dedicated spreadsheet with that account. Keep credential files outside
 this repository; configure their paths locally, never in chat or public files.
-`sheet-push` replaces the Queue sheet body: use it only for an explicitly selected
-dedicated sheet, never a mixed-use spreadsheet tab. This is separate from normal
-connector-based row updates. Without API access, CSV import is a manual alternative.
+`sheet-push` uses ID-based upserts and **does not clear** the sheet. It does not treat a missing local item as permission to remove a cloud row. Use a dedicated Queue sheet with matching column headers. Without API access, CSV import is a manual alternative.
 
 Other clouds and local CSV dashboards remain available when explicitly selected.

@@ -99,54 +99,153 @@ def _quote_tab(tab: str) -> str:
     return "'" + tab.replace("'", "''") + "'"
 
 
-def upsert_rows(service, spreadsheet_id: str, sheet_name: str, updates: list[dict]) -> int:
-    """Update only named rows, preserving sheet extras and all other items.
+class QueueConflict(RuntimeError):
+    """Queue changed during a write; caller must inspect before retrying."""
 
-    Caller must serialize concurrent writers externally. Readback detects many
-    conflicts but Sheets values.update alone cannot ensure atomic compare/swap.
+
+_NUMERIC_COLUMNS = {"list_price_rub", "quick_sale_rub", "post_photo_count"}
+
+
+def _cell_equal(column: int, observed: object, expected: object) -> bool:
+    if observed is None or observed == "":
+        observed = ""
+    if expected is None or expected == "":
+        expected = ""
+    if SHEET_HEADERS[column] in _NUMERIC_COLUMNS:
+        try:
+            return Decimal(str(observed)) == Decimal(str(expected))
+        except InvalidOperation:
+            pass
+    return str(observed) == str(expected)
+
+
+def _lookup(rows: list[list], item_id: str) -> tuple[int | None, list]:
+    """Locate the item from a FRESH sheet read; detect all duplicate IDs."""
+    _header_check(rows)
+    found = []
+    seen = set()
+    for row_no, row in enumerate(rows[1:], 2):
+        if not row or not str(row[0]).strip():
+            continue
+        key = str(row[0])
+        if key in seen:
+            raise QueueConflict(f"duplicate Queue item ID: {key}")
+        seen.add(key)
+        if key == item_id:
+            found.append((row_no, row))
+    return found[0] if found else (None, [])
+
+
+def _read_rows(api, spreadsheet_id: str, tab: str) -> list[list]:
+    return api.get(
+        spreadsheetId=spreadsheet_id,
+        range=f"{tab}!A1:M",
+        valueRenderOption="UNFORMATTED_VALUE",
+    ).execute().get("values", [])
+
+
+def _column_a1(index: int) -> str:
+    return chr(ord("A") + index)
+
+
+def upsert_rows(service, spreadsheet_id: str, sheet_name: str, updates: list[dict]) -> int:
+    """Upsert separate items without cached row numbers or computed append slots.
+
+    New items use server-positioned values.append(INSERT_ROWS); existing items
+    patch only specified cells. Every item is re-located by its ID and read
+    back after writing, so other chats can append, reorder or edit other items.
+
+    This cannot provide atomic compare-and-swap: a physical row deletion in the
+    few milliseconds between the ID check and a positional batchUpdate can
+    still move the target. Prefer soft deletion/archiving while chats write.
     """
+    ids: set[str] = set()
+    for patch in updates:
+        item_id = patch.get("id") if isinstance(patch, dict) else None
+        if not isinstance(item_id, str) or not item_id.strip():
+            raise ValueError("queue upsert requires an item ID")
+        if item_id in ids:
+            raise ValueError(f"duplicate update item ID: {item_id}")
+        unknown = set(patch) - set(SHEET_HEADERS)
+        if unknown:
+            raise ValueError(f"unknown Queue columns: {sorted(unknown)}")
+        ids.add(item_id)
+
     api = service.spreadsheets().values()
     tab = _quote_tab(sheet_name)
-    last_col = "M"
-    existing = api.get(
-        spreadsheetId=spreadsheet_id, range=f"{tab}!A1:{last_col}",
-        valueRenderOption="UNFORMATTED_VALUE",
-    ).execute().get("values", [])
-    actions = plan_upserts(existing, updates)
-    for row_number, values in actions:
-        api.update(
-            spreadsheetId=spreadsheet_id,
-            range=f"{tab}!A{row_number}:{last_col}{row_number}",
-            valueInputOption="RAW",
-            body={"values": [values]},
-        ).execute()
-    verified = api.get(
-        spreadsheetId=spreadsheet_id, range=f"{tab}!A1:{last_col}",
-        valueRenderOption="UNFORMATTED_VALUE",
-    ).execute().get("values", [])
-    _header_check(verified)
-    def comparable(index, value):
-        if value is None or value == "":
-            return ""
-        if SHEET_HEADERS[index] in {"list_price_rub", "quick_sale_rub", "post_photo_count"}:
+    for patch in updates:
+        item_id = patch["id"]
+        # Do not cache sheet row indices across operations. Physical row
+        # insert/delete can shift EVERY row below it.
+        existing = _read_rows(api, spreadsheet_id, tab)
+        row_no, row = _lookup(existing, item_id)
+        if row_no is None:
+            values = [patch.get(name, "") if patch.get(name) is not None else ""
+                      for name in SHEET_HEADERS]
+            # The server locates the current end of the logical table, instead
+            # of trusting len(existing)+1 from an earlier snapshot.
             try:
-                return Decimal(str(value))
-            except InvalidOperation:
-                pass
-        return str(value)
+                api.append(
+                    spreadsheetId=spreadsheet_id,
+                    range=f"{tab}!A:M",
+                    valueInputOption="RAW",
+                    insertDataOption="INSERT_ROWS",
+                    body={"values": [values]},
+                ).execute()
+            except Exception as exc:
+                # An ambiguous response can still mean the row was appended;
+                # inspect first, never immediately repeat the append.
+                check_no, check_row = _lookup(_read_rows(api, spreadsheet_id, tab), item_id)
+                if check_no is None or any(
+                    not _cell_equal(i, check_row[i] if i < len(check_row) else "", val)
+                    for i, val in enumerate(values)
+                ):
+                    raise QueueConflict(f"append for {item_id} failed or is unverified") from exc
+        else:
+            # A cheap final identity check catches rows shifted after the
+            # initial lookup (e.g. manual deletion/insert in a second chat).
+            identity = api.get(
+                spreadsheetId=spreadsheet_id,
+                range=f"{tab}!A{row_no}",
+                valueRenderOption="UNFORMATTED_VALUE",
+            ).execute().get("values", [])
+            if not identity or not identity[0] or str(identity[0][0]) != item_id:
+                raise QueueConflict(f"row for {item_id} moved; retry after refresh")
+            # Patch just the supplied cells: do not overwrite an unrelated
+            # update of another column or any formula in an untouched column.
+            data = []
+            for i, name in enumerate(SHEET_HEADERS[1:], start=1):
+                if name not in patch:
+                    continue
+                value = patch[name] if patch[name] is not None else ""
+                current = row[i] if i < len(row) else ""
+                if not _cell_equal(i, current, value):
+                    data.append({
+                        "range": f"{tab}!{_column_a1(i)}{row_no}",
+                        "values": [[value]],
+                    })
+            if data:
+                try:
+                    api.batchUpdate(
+                        spreadsheetId=spreadsheet_id,
+                        body={"valueInputOption": "RAW", "data": data},
+                    ).execute()
+                except Exception as exc:
+                    # A failed API response does not authorize blind retries.
+                    raise QueueConflict(f"update for {item_id} failed or is unverified") from exc
 
-    for row_number, values in actions:
-        observed = verified[row_number - 1] if row_number <= len(verified) else []
-        if any(
-            comparable(index, observed[index] if index < len(observed) else "") !=
-            comparable(index, expected)
-            for index, expected in enumerate(values)
-        ):
-            raise RuntimeError(f"Queue readback mismatch at row {row_number}")
-    final_ids = [str(row[0]) for row in verified[1:] if row and str(row[0]).strip()]
-    if len(final_ids) != len(set(final_ids)):
-        raise RuntimeError("concurrent change or duplicate Queue IDs after upsert")
-    return len(actions)
+        checked = _read_rows(api, spreadsheet_id, tab)
+        actual_no, actual_row = _lookup(checked, item_id)
+        if actual_no is None:
+            raise QueueConflict(f"item {item_id} vanished after writing")
+        for i, name in enumerate(SHEET_HEADERS):
+            if name not in patch:
+                continue
+            observed = actual_row[i] if i < len(actual_row) else ""
+            expected = patch[name] if patch[name] is not None else ""
+            if not _cell_equal(i, observed, expected):
+                raise QueueConflict(f"Queue readback mismatch: item={item_id}, column={name}")
+    return len(updates)
 
 
 def push_index_to_sheet(
