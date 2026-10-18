@@ -101,6 +101,33 @@ class CloudSyncRegressionTest(unittest.TestCase):
         self.assertEqual(v.table[1][0], "existing")
         self.assertEqual(v.table[2][0], "new")
 
+    def test_partial_patch_retains_price_photo_count_and_notes(self):
+        existing = [SHEET_HEADERS, [
+            "my-item", "draft", "Original title", "Москва", 2900, 1900,
+            "stripped_verified", 3, "2026-10-18", "2026-10-18",
+            "my-item", "https://drive.google.com/folder", "owner confirmed"
+        ]]
+        fake = FakeValues(existing)
+        upsert_rows(FakeService(fake), "test", "Queue", [
+            {"id": "my-item", "status": "ready"}
+        ])
+        self.assertEqual(fake.table[1][1], "ready")
+        self.assertEqual(fake.table[1][2:], existing[1][2:])
+        self.assertEqual(fake.clear_calls, 0)
+
+    def test_explicit_clear_does_not_clear_other_fields(self):
+        existing = [SHEET_HEADERS, [
+            "my-item", "draft", "Original title", "Москва", 2900, 1900,
+            "stripped_verified", 3, "2026-10-18", "2026-10-18",
+            "my-item", "folder-url", "old notes"
+        ]]
+        fake = FakeValues(existing)
+        upsert_rows(FakeService(fake), "test", "Queue", [
+            {"id": "my-item", "notes": None}
+        ])
+        self.assertEqual(fake.table[1][12], "")
+        self.assertEqual(fake.table[1][4], 2900)
+
     def test_failed_write_does_not_clear(self):
         v = FakeValues([SHEET_HEADERS, ["other", "ready"]], fail_update=True)
         with self.assertRaisesRegex(RuntimeError, "simulated connector"):
