@@ -54,7 +54,8 @@ def plan_upserts(existing: list[list], updates: list[dict]) -> list[tuple[int, l
     """Pure planner. 1-based row positions; leaves unrelated rows untouched.
 
     Rejects duplicate existing IDs and duplicate input IDs rather than choosing
-    a possibly stale row. This is not an atomic multi-client transaction.
+    a possibly stale row. Partial updates retain existing unspecified fields.
+    This is not an atomic multi-client transaction.
     """
     _header_check(existing)
     seen: dict[str, int] = {}
@@ -76,12 +77,19 @@ def plan_upserts(existing: list[list], updates: list[dict]) -> list[tuple[int, l
         if key in updates_ids:
             raise ValueError(f"duplicate update item ID: {key}")
         updates_ids.add(key)
-        values = [item.get(name, "") if item.get(name) is not None else "" for name in SHEET_HEADERS]
         if key in seen:
             row = seen[key]
+            # Preserve existing values in columns omitted by a partial patch.
+            # An explicit None/empty string is a deliberate request to clear.
+            values = list(existing[row - 1][:len(SHEET_HEADERS)])
+            values += [""] * (len(SHEET_HEADERS) - len(values))
         else:
             row = next_row
             next_row += 1
+            values = [""] * len(SHEET_HEADERS)
+        for column, name in enumerate(SHEET_HEADERS):
+            if name in item:
+                values[column] = item[name] if item[name] is not None else ""
         actions.append((row, values))
     return actions
 
