@@ -1,0 +1,6 @@
+target-version = "py310"
+
+[lint.per-file-ignores]
+# Test modules add the repository's optional scripts/ directory to sys.path
+# before importing resale_queue; production modules retain E402 checks.
+"tests/test_*.py" = ["E402"]

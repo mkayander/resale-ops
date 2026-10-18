@@ -18,16 +18,24 @@ class FakeOperation:
 
 
 class FakeValues:
-    def __init__(self, initial, fail_update=False, corrupt=False):
+    def __init__(self, initial, fail_update=False, corrupt=False, formatted_readback=False):
         self.table = [list(row) for row in initial]
         self.fail_update = fail_update
         self.corrupt = corrupt
+        self.formatted_readback = formatted_readback
+        self.read_options = []
         self.updates = []
         self.clear_calls = 0
 
     def get(self, *, spreadsheetId, range, valueRenderOption=None):
         def fetch():
+            self.read_options.append(valueRenderOption)
             rows = [list(x) for x in self.table]
+            if self.formatted_readback and self.updates and valueRenderOption != "UNFORMATTED_VALUE":
+                for row in rows[1:]:
+                    if len(row) > 4 and isinstance(row[4], (int, float)):
+                        row[4] = f"{row[4]:,} RUB"
+
             if self.corrupt and self.updates:
                 rows[-1][1] = "externally-changed"
             return {"values": rows}
@@ -77,6 +85,14 @@ class CloudSyncRegressionTest(unittest.TestCase):
         self.assertEqual(upsert_rows(s, "test", "Queue", [data]), 1)
         self.assertEqual(len(v.table), 3)
         self.assertEqual(v.clear_calls, 0)
+
+    def test_currency_formatting_does_not_break_verified_readback(self):
+        v = FakeValues([SHEET_HEADERS, ["my-item", "draft"]], formatted_readback=True)
+        upsert_rows(FakeService(v), "test", "Queue", [
+            {"id": "my-item", "status": "ready", "list_price_rub": 2900}
+        ])
+        self.assertEqual(v.read_options, ["UNFORMATTED_VALUE", "UNFORMATTED_VALUE"])
+        self.assertEqual(v.table[1][4], 2900)
 
     def test_partial_index_does_not_delete_other_items(self):
         v = FakeValues([SHEET_HEADERS, ["existing", "ready"]])

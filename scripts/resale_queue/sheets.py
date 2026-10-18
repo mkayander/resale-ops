@@ -113,6 +113,7 @@ def upsert_rows(service, spreadsheet_id: str, sheet_name: str, updates: list[dic
         ).execute()
     verified = api.get(
         spreadsheetId=spreadsheet_id, range=f"{tab}!A1:{last_col}",
+        valueRenderOption="UNFORMATTED_VALUE",
     ).execute().get("values", [])
     _header_check(verified)
     def normalized(row):

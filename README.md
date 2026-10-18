@@ -16,6 +16,8 @@ By **Max Kayander** · MIT · ChatGPT Projects / Codex / Claude Code / Cursor
 Инструкции проекта читают skill и references напрямую из GitHub; skills.sh
 для этого сценария не требуется.
 
+**Quality gates:** обязательный CI тестирует Python-код, схему, обработку фото, безопасную синхронизацию очереди и release ZIP полностью офлайн относительно Google. Для разработчика: `python scripts/ci_quality.py` после `pip install -r requirements-dev.txt`. Ручной, необязательный `Google sandbox smoke (optional)` проверяет только чтение выделенных тестовых ресурсов; он не блокирует PR или релиз. Подробнее: [проверки](docs/TESTING.md).
+
 ## Дополнительная установка для Codex, Claude Code и Cursor
 
 Через CLI [skills.sh](https://skills.sh/docs) из папки своего проекта:
