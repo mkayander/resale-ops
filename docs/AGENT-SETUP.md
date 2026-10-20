@@ -54,4 +54,9 @@ If project instructions already contain Resale Ops, do not duplicate them. Check
 
 After the user creates the first item, ask them to upload photos of that one item to `inbox`. Then follow the skill: identify the model and condition, ask consequential questions, research specifications and prices, prepare separate Avito and Youla copy, inspect the photos, and update `listing.md`, `meta.json`, and the matching Queue row.
 
-Marketplace account work and publication follow the skill and the user's explicit request. The user completes CAPTCHA manually.
+Marketplace account work and publication are forbidden by default. A direct user
+authorization must name the specific item, platform and unchanged final listing
+version; a general request to sell, prepare or fill a draft is not publication
+approval. Use Chrome DevTools MCP only for an already admitted browser method.
+The user completes login, CAPTCHA, 2FA and identity checks manually. Paid actions,
+moderation submission, import and feed upload require separate direct approval.

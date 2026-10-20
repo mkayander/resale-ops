@@ -46,7 +46,17 @@ prohibitions, unlikely scenarios and implementation explanations in onboarding.
 - Do not add marketplace login, form filling, photo upload, publication or buyer
   messaging to the existing preparation workflow. No marketplace account adapter
   is admitted. Browser availability or owner consent alone does not establish
-  marketplace permission.
+  marketplace permission. Publication is forbidden unless the user directly
+  authorizes it for the specific item, platform and unchanged final listing
+  version; preparation, draft work, or a general request to sell is not that
+  authorization. Moderation submission, import, feed upload, paid promotion,
+  and quota-consuming actions are also prohibited without separate direct
+  approval.
+- When browser tooling is explicitly authorized for an admitted method, use the
+  Chrome DevTools MCP. Tool availability is not permission. Never extract
+  cookies, tokens, passwords, or 2FA data; the user handles login, CAPTCHA and
+  identity checks manually. Stop before publication and hand the final action
+  back to the user unless the direct authorization above applies.
 - `ru-marketplace-mcp` is documented for source inspection only. Do not install,
   start or call it as part of validation. Read its reference before integration
   work. Do not restore runnable MCP profiles under an “inspection” label.
