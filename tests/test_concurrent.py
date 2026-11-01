@@ -181,15 +181,15 @@ class ConcurrentChatTest(unittest.TestCase):
         with self.assertRaises(JournalConflict):
             project_target("test-cooler", "test-cooler", merged)
 
-    def test_asking_price_requires_listing_and_new_approval(self):
+    def test_asking_price_requires_listing_but_not_owner_approval(self):
         baseline = base()
         before = replay(baseline, [])
         invalid = edit(baseline, before, {"meta.price.list_price_rub": 2700}, 1)
-        with self.assertRaisesRegex(JournalError, "owner approval"):
+        with self.assertRaisesRegex(JournalError, "listing text"):
             replay(baseline, [invalid])
         valid = edit(baseline, before, {
             "meta.price.list_price_rub": 2700,
-            "meta.price.price_selected_by_owner": True,
+            "meta.price.price_selected_by_owner": False,
             "listing": "# Cooler\\nAsking price 2700 ₽. Pickup in Moscow.",
         }, 2)
         saved = replay(baseline, [valid])

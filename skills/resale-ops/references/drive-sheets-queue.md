@@ -29,11 +29,13 @@ With the owner's setup request:
    spreadsheet with a `Queue` tab. Keep access private unless the owner requests
    sharing. Do not modify unrelated resources.
 3. Add these headers to the new Queue tab:
-   `id`, `status`, `title`, `city`, `list_price_rub`, `quick_sale_rub`,
+   `id`, `status`, `title`, `city`, `quantity`, `list_price_rub`, `quick_sale_rub`,
    `metadata_status`, `post_photo_count`, `prepared_at`, `updated_at`,
    `folder_name`, `folder_url`, `notes`.
-   Inspect an existing sheet before editing; preserve its rows, formulas and
-   extra columns. Match rows by `id`, not title or row number alone.
+   Inspect an existing sheet before editing. If it has the previous schema,
+   insert `quantity` immediately after `city`, fill existing item rows with
+   `1`, and verify that all later columns stayed aligned. Preserve rows,
+   formulas and extra columns. Match rows by `id`, not title or row number alone.
 4. Save actual returned folder/spreadsheet IDs and URLs in the private
    `.resale-locations.json` file inside the `Resale` Drive folder, using the
    [locations schema](locations.md).
@@ -59,7 +61,7 @@ With the owner's setup request:
    If upload fails, retain the original until recovery. No permanent desktop
    sync is needed. Defaults for the optional utility are
    a 2048-pixel edge and a target near 2 MB; inspect actual output size and EXIF.
-5. Set `ready` only after drafts, selected price and sanitized photos are complete
+5. Set `ready` only after drafts, the default suggested price and sanitized photos are complete
    and verified. If photo download, processing or upload is unavailable, retain
    `draft`/`researching`, note the blocker, and provide manual next steps.
 6. Return the item-folder and sheet links. The owner checks the final package and
@@ -75,14 +77,14 @@ Cloud access never authorizes marketplace login, form entry or publication.
 
 The local `sheet-push` is a non-destructive ID-based upsert: it checks existing headers and IDs, updates only matching rows, appends missing rows, then reads the affected values back. It refuses duplicate IDs. It does not remove rows absent from the local index, and must not be used as a way to delete stale cloud items. Parallel edits of **different items** are supported by using server-positioned appends and a fresh ID lookup per item. Do not cache row indexes. A physical deletion exactly between identity check and positional update is still not atomic; avoid deleting rows during writes, or adopt a row-metadata-based provider adapter.
 
-Current local metadata uses nested v2 `price` and `photos` fields. The local indexer normalizes older flat schemas in memory. Do not publish a record with `ready` unless asking price, handoff terms and sanitized photos are confirmed. `photos/post/` holds the only durable photo copies; `--archive-originals` is a deliberate **local-only opt-in**, not for the normal cloud flow.
+Current local metadata uses nested v2 `price` and `photos` fields and a positive integer `quantity` (default `1`). The local indexer normalizes older records in memory. Do not publish a record with `ready` unless the suggested asking price, handoff terms and sanitized photos are present. Owner approval is not required to use the suggested price; publication authorization remains separate. Titles are limited to 50 characters. Fix and retry validation failures immediately without asking for approval when the correction does not invent a consequential fact. `photos/post/` holds the only durable photo copies; `--archive-originals` is a deliberate **local-only opt-in**, not for the normal cloud flow.
 
 ## Parallel chats adding or removing rows
 
 The common case is **Chat A changes item A while Chat B adds item B**. Keep the Queue as a dashboard indexed by stable item ID, not row number. There is no need to initialize the per-item journal for unrelated items.
 
 - **New item:** check for an existing ID, then append through Sheets itself. In a local Sheets client call `spreadsheets.values.append` with `insertDataOption=INSERT_ROWS`; for connected tools exposing only `batchUpdate`, use `appendCells` with `sheetId` (never a guessed `start.rowIndex`). Read the sheet again and verify exactly one row with the item ID. If the append returns an ambiguous error, search by ID before considering a retry. Multiple appenders of *different* IDs get distinct allocated rows.
-- **Update existing item:** read the current ID column and locate exactly one matching row; verify that exact ID again before the write. Patch **only changed columns**, not `A:M` or the full sheet; read back the row by ID, *not* the previously remembered coordinate. Reject duplicate IDs and ambiguous readback. Other items' field changes must be preserved.
+- **Update existing item:** read the current ID column and locate exactly one matching row; verify that exact ID again before the write. Patch **only changed columns**, not the full sheet or row; read back the row by ID, *not* the previously remembered coordinate. Reject duplicate IDs and ambiguous readback. Other items' field changes must be preserved.
 - **Rows inserted, reordered or physically deleted in another chat:** discard cached row positions and resolve the target ID afresh. If its position changed after lookup, stop and refresh rather than risk a write to the wrong item. A narrow race remains if a physical deletion happens **between the final identity check and the positional update**: the ordinary Sheets values interface does not offer an atomic conditional row update. For reliable simultaneous physical deletion, a dedicated provider adapter with row-associated developer metadata and `batchUpdateByDataFilter` is required; the default ChatGPT connector does not currently expose that operation in this project. Until then, perform bulk physical deletes while other chat writers are idle. Prefer archiving/filtering during routine work.
 - **Deleted rows and data authority:** the Drive item folder, not the Queue row, is the source of item facts. Removing a Queue row does *not* delete its Drive item; the next explicit sync of that item can recreate the row. Permanent item deletion must be a separate owner-authorized workflow, not inferred from an absent spreadsheet row. A missing ID should never trigger deleting any other row.
 

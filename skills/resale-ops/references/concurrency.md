@@ -51,8 +51,9 @@ existing baseline in the normal workflow.
    indivisible field: concurrent listing rewrites conflict. Include any
    dependent listing change in the same operation as a price/terms/condition
    change, then explicitly review the combined result before projecting.
-   Owner approval for a changed asking price must be reconfirmed; do not
-   reuse authorization tied to an older listing revision.
+   A changed asking price does not require owner approval, but it must update
+   the listing projection. Publication authorization remains tied to the
+   specific listing revision and cannot be reused after a price change.
 4. Upload `<operation_id>.json` **as a new raw file**, never update an old
    operation or rename it after success. Re-list and verify by `operation_id`
    and exact contents. If upload reports an error, inspect Drive first:

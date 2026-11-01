@@ -35,6 +35,7 @@ def default_meta(item_id: str) -> dict:
         "schema_version": 2,
         "title": "",
         "city": "",
+        "quantity": 1,
         "price": {"currency": "RUB", "list_price_rub": None, "quick_sale_rub": None, "price_selected_by_owner": False},
         "platforms": {"avito": {"mode": "prepare_only", "existing_status": "unknown", "uploaded_photo_count": 0}, "youla": {"mode": "prepare_only", "existing_status": "unknown", "uploaded_photo_count": 0}},
         "photos": {
@@ -99,6 +100,7 @@ INDEX_FIELDS = [
     "status",
     "title",
     "city",
+    "quantity",
     "list_price_rub",
     "quick_sale_rub",
     "metadata_status",

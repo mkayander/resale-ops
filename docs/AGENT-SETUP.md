@@ -10,7 +10,11 @@ Set up Resale Ops for the current user in a web ChatGPT Project. Follow these st
 4. In Google Drive, look inside the verified `Resale` folder for the private file `.resale-locations.json` and for existing folders or spreadsheets. Reuse verified resources first; if there are multiple candidates, show them and ask the user to choose.
 5. If the resources do not exist, create a private `Resale` folder, its `queue` subfolder, and a `Resale Queue` spreadsheet with a `Queue` tab and these headers:
 
-   `id, status, title, city, list_price_rub, quick_sale_rub, metadata_status, post_photo_count, prepared_at, updated_at, folder_name, folder_url, notes`
+   `id, status, title, city, quantity, list_price_rub, quick_sale_rub, metadata_status, post_photo_count, prepared_at, updated_at, folder_name, folder_url, notes`
+
+   If an existing Queue has the previous headers, insert `quantity` immediately
+   after `city`, fill existing item rows with `1`, and verify that all other
+   columns and values stayed aligned.
 
 6. Create or update the private Drive file `.resale-locations.json` inside the `Resale` folder with the actual IDs and URLs. Read it back, and never put these private values in the public repository or local source files.
 7. Determine whether Resale Ops instructions are already saved in Project Instructions. If the host cannot expose the project instructions, ask the user to confirm or paste the current block; do not assume that it is absent.
