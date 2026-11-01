@@ -68,11 +68,11 @@ Preserve evidence labels:
 
 Never upgrade evidence or invent timestamps. Do not increase blocked or challenged access attempts to reach a quota. Keep Tier B data separate from Tier A estimates; label confidence and limitations explicitly.
 
-Report asking-price range, market reference, and quick-sale price with rationale and limitations. These are not completed-sale prices or time-to-sale promises. Record the chosen listing price; if strategy is undecided, ask before presenting fields as ready to post.
+Report asking-price range, market reference, and quick-sale price with rationale and limitations. These are not completed-sale prices or time-to-sale promises. Use the suggested asking price as the listing price by default and continue without requesting owner approval; the owner can edit it later. A later price edit updates the listing and saved state, but price selection itself is not publication approval.
 
 ### 4. Produce listing packages
 
-Prepare a title, candidate category, attributes, candid description, price, and handoff terms. Respect known category and duplicate rules. Do not claim perfect condition, authenticity, or operation without evidence. Disclose defects and missing parts. Never invent use history, contacts, or exact address, and exclude others’ photos, seller contacts, promotional tags, and external links.
+Prepare quantity, a title of at most **50 characters**, candidate category, attributes, candid description, price, and handoff terms. Quantity defaults to `1` unless the evidence or owner says otherwise. Respect known category and duplicate rules. Do not claim perfect condition, authenticity, or operation without evidence. Disclose defects and missing parts. Never invent use history, contacts, or exact address, and exclude others’ photos, seller contacts, promotional tags, and external links. Count title characters before saving or transferring it. If any field validation fails, correct the field immediately and retry the same non-publishing write; do not pause for owner approval unless the correction would require inventing a consequential fact.
 
 Use the [result schema](references/output.md). Show unknown fields and photo order. In `prepare_only`, produce a separate package per platform plus concise manual-transfer steps. The user checks current field names and limits; unknowns stay blank.
 

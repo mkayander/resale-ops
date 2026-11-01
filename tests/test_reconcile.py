@@ -138,12 +138,12 @@ class ReconciliationTest(unittest.TestCase):
             reconcile(store, store.item_id, prior, target)
         self.assertFalse(store.writes)
 
-    def test_invalid_ready_target_has_no_side_effects(self):
+    def test_ready_target_without_sanitized_photos_has_no_side_effects(self):
         store = FakeStore()
         prior = snapshot(store, store.item_id)
         meta = store.read_meta(store.item_id)
         meta["status"] = "ready"
-        with self.assertRaisesRegex(ValueError, "owner-approved"):
+        with self.assertRaisesRegex(ValueError, "sanitized"):
             make_target(store.item_id, "Cooler", meta, store.item_id)
         self.assertEqual(store.listing, prior.listing)
         self.assertIsNone(store.queue)

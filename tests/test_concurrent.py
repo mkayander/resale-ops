@@ -1,5 +1,7 @@
 """Synthetic concurrent-chat tests. Every operation is immutable/offline."""
 import copy
+import hashlib
+import json
 import sys
 import unittest
 from pathlib import Path
@@ -54,6 +56,32 @@ def edit(baseline, view, updates, index):
 
 
 class ConcurrentChatTest(unittest.TestCase):
+    def test_legacy_baseline_can_migrate_quantity_and_long_title(self):
+        baseline = base()
+        baseline["meta"].pop("quantity")
+        baseline["meta"]["title"] = "x" * 51
+        state = {"listing": baseline["listing"], "meta": baseline["meta"]}
+        baseline["base_hash"] = hashlib.sha256(
+            json.dumps(
+                state, ensure_ascii=False, sort_keys=True, separators=(",", ":")
+            ).encode("utf-8")
+        ).hexdigest()
+
+        before = replay(baseline, [{
+            "format": 1,
+            "item_id": "test-cooler",
+            "operation_id": f"{1:032x}",
+            "base_hash": baseline["base_hash"],
+            "observed": [],
+            "migration": "quantity-title-v1",
+            "edits": {
+                "meta.title": "Migrated cooler",
+                "meta.quantity": 1,
+            },
+        }])
+        self.assertEqual(before.state["meta"]["title"], "Migrated cooler")
+        self.assertEqual(before.state["meta"]["quantity"], 1)
+
     def test_disjoint_changes_from_two_stale_chats_merge(self):
         baseline = base()
         first_read = replay(baseline, [])
@@ -181,15 +209,15 @@ class ConcurrentChatTest(unittest.TestCase):
         with self.assertRaises(JournalConflict):
             project_target("test-cooler", "test-cooler", merged)
 
-    def test_asking_price_requires_listing_and_new_approval(self):
+    def test_asking_price_requires_listing_but_not_owner_approval(self):
         baseline = base()
         before = replay(baseline, [])
         invalid = edit(baseline, before, {"meta.price.list_price_rub": 2700}, 1)
-        with self.assertRaisesRegex(JournalError, "owner approval"):
+        with self.assertRaisesRegex(JournalError, "listing text"):
             replay(baseline, [invalid])
         valid = edit(baseline, before, {
             "meta.price.list_price_rub": 2700,
-            "meta.price.price_selected_by_owner": True,
+            "meta.price.price_selected_by_owner": False,
             "listing": "# Cooler\\nAsking price 2700 ₽. Pickup in Moscow.",
         }, 2)
         saved = replay(baseline, [valid])
