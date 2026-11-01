@@ -74,6 +74,12 @@ existing baseline in the normal workflow.
    the current Queue row is up-to-date. Never re-submit a marketplace listing
    just to repair these saved records.
 
+Legacy journals created before the Queue gained `quantity` use one immutable
+`quantity-title-v1` migration operation. It must add `meta.quantity` and may
+shorten `meta.title` to the 50-character limit; no unrelated edits are allowed.
+The original baseline stays immutable, and replay accepts its pre-quantity hash
+only through this migration path.
+
 ### Important consistency limits
 
 The immutable journal prevents **loss of recorded operations** under

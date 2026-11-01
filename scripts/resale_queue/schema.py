@@ -70,7 +70,9 @@ def normalize_meta(raw: dict) -> dict:
     return meta
 
 
-def validate_meta(raw: dict, *, ready_check: bool = True) -> dict:
+def validate_meta(
+    raw: dict, *, ready_check: bool = True, title_check: bool = True
+) -> dict:
     """Validate core invariants; return normalized data without mutating input."""
     meta = normalize_meta(raw)
     item_id = meta.get("id")
@@ -82,7 +84,7 @@ def validate_meta(raw: dict, *, ready_check: bool = True) -> dict:
         if meta.get(field) is not None and not isinstance(meta[field], str):
             raise ValueError(f"{field} must be a string")
     title = meta.get("title")
-    if isinstance(title, str) and len(title) > TITLE_MAX_LENGTH:
+    if title_check and isinstance(title, str) and len(title) > TITLE_MAX_LENGTH:
         raise ValueError(f"title must be at most {TITLE_MAX_LENGTH} characters")
     quantity = meta.get("quantity")
     if isinstance(quantity, bool) or not isinstance(quantity, int) or quantity < 1:

@@ -61,10 +61,10 @@ def _digest(obj: Any) -> str:
     ).hexdigest()
 
 
-def _base_state(baseline: dict) -> dict:
+def _base_state(baseline: dict, *, allow_legacy_title: bool = False) -> dict:
     if not isinstance(baseline, dict) or not isinstance(baseline.get("listing"), str):
         raise JournalError("baseline requires listing text")
-    meta = validate_meta(baseline.get("meta"))
+    meta = validate_meta(baseline.get("meta"), title_check=not allow_legacy_title)
     return {"listing": baseline["listing"], "meta": meta}
 
 
@@ -81,9 +81,16 @@ def make_baseline(listing: str, meta: dict) -> dict:
 def _checked_baseline(baseline: dict) -> dict:
     if baseline.get("format") != 1:
         raise JournalError("unsupported baseline format")
-    state = _base_state(baseline)
+    state = _base_state(baseline, allow_legacy_title=True)
     if baseline.get("base_hash") != _digest(state):
-        raise JournalError("baseline hash mismatch")
+        # Schema v2 journals created before quantity support hashed metadata
+        # without the now-defaulted top-level quantity field.
+        legacy = copy.deepcopy(state)
+        raw_meta = baseline.get("meta")
+        if isinstance(raw_meta, dict) and "quantity" not in raw_meta:
+            legacy["meta"].pop("quantity", None)
+        if baseline.get("base_hash") != _digest(legacy):
+            raise JournalError("baseline hash mismatch")
     return state
 
 
@@ -142,13 +149,21 @@ def _parse_operations(baseline: dict, operations: list[dict]) -> dict[str, dict]
             # Do not preserve malformed operations as immutable events.
             _set_path(copy.deepcopy({"listing": baseline["listing"], "meta": baseline["meta"]}),
                       key, value)
+        migration = raw.get("migration")
+        if migration is not None:
+            if migration != "quantity-title-v1":
+                raise JournalError("unsupported migration")
+            if "quantity" in baseline["meta"] or "meta.quantity" not in edits:
+                raise JournalError("quantity-title migration is only for legacy baselines")
+            if not set(edits) <= {"meta.quantity", "meta.title"}:
+                raise JournalError("quantity-title migration contains unrelated edits")
         # A fresh asking price is a new listing version. Suggested pricing does
         # not need owner approval, but the visible listing must stay in sync.
         if "meta.price.list_price_rub" in edits and "listing" not in edits:
             raise JournalError("asking price requires updating listing text")
         if any(k in edits for k in (
             "meta.pickup_location", "meta.delivery_terms", "meta.title"
-        )) and "listing" not in edits:
+        )) and "listing" not in edits and migration != "quantity-title-v1":
             raise JournalError("listing-relevant terms require updating listing text")
         if ("meta.photos.prepared_filenames" in edits
                 and "meta.photos.metadata_status" not in edits):
