@@ -33,6 +33,7 @@ class WorkflowTest(unittest.TestCase):
             self.assertEqual(meta["photos"]["prepared_filenames"], ["01.jpg"])
             meta["title"] = "Test cooler"
             meta["city"] = "Москва"
+            meta["quantity"] = 2
             meta["status"] = "ready"
             meta["pickup_location"] = "Москва, метро Севастопольская"
             meta["price"].update({
@@ -48,6 +49,7 @@ class WorkflowTest(unittest.TestCase):
             self.assertEqual(len(queue), 1)
             self.assertEqual(queue[0]["post_photo_count"], 1)
             self.assertEqual(queue[0]["list_price_rub"], 2900)
+            self.assertEqual(queue[0]["quantity"], 2)
             self.assertEqual(queue[0]["status"], "ready")
             rows = [SHEET_HEADERS, ["another-item", "posted"], [item.name, "draft"]]
             changes = plan_upserts(rows, queue)
@@ -56,15 +58,22 @@ class WorkflowTest(unittest.TestCase):
             self.assertEqual(changes[0][1][1], "ready")
             self.assertEqual(rows[1][0:2], ["another-item", "posted"])
 
-    def test_missing_owner_approval_does_not_persist_ready(self):
+    def test_suggested_price_persists_ready_without_owner_approval(self):
         with tempfile.TemporaryDirectory() as temp:
             item = init_item(Path(temp), "pending")
             meta = load_meta(item)
             meta.update({"title": "Item", "city": "Москва", "status": "ready",
                          "pickup_location": "Москва"})
-            with self.assertRaisesRegex(ValueError, "owner-approved"):
-                save_meta(item, meta)
-            self.assertEqual(load_meta(item)["status"], "draft")
+            meta["price"]["list_price_rub"] = 1500
+            meta["photos"].update({
+                "prepared_filenames": ["01.jpg"],
+                "post_count": 1,
+                "metadata_status": "stripped_verified",
+            })
+            save_meta(item, meta)
+            saved = load_meta(item)
+            self.assertEqual(saved["status"], "ready")
+            self.assertFalse(saved["price"]["price_selected_by_owner"])
 
 
 if __name__ == "__main__":

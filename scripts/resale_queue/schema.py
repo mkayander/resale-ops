@@ -10,6 +10,7 @@ import re
 from pathlib import PurePosixPath
 
 SCHEMA_VERSION = 2
+TITLE_MAX_LENGTH = 50
 STATUSES = {"draft", "researching", "ready", "posted", "published", "sold", "archived"}
 ID_PATTERN = re.compile(r"^[a-z0-9]+(?:-[a-z0-9]+)*$")
 POST_NAME = re.compile(r"^\d{2,}(?:[_-][^/\\]+)?\.jpe?g$", re.IGNORECASE)
@@ -65,10 +66,13 @@ def normalize_meta(raw: dict) -> dict:
     elif not isinstance(platforms, dict):
         raise ValueError("platforms must be an object")
     meta.setdefault("status", "draft")
+    meta.setdefault("quantity", 1)
     return meta
 
 
-def validate_meta(raw: dict, *, ready_check: bool = True) -> dict:
+def validate_meta(
+    raw: dict, *, ready_check: bool = True, title_check: bool = True
+) -> dict:
     """Validate core invariants; return normalized data without mutating input."""
     meta = normalize_meta(raw)
     item_id = meta.get("id")
@@ -79,6 +83,12 @@ def validate_meta(raw: dict, *, ready_check: bool = True) -> dict:
     for field in ("title", "city"):
         if meta.get(field) is not None and not isinstance(meta[field], str):
             raise ValueError(f"{field} must be a string")
+    title = meta.get("title")
+    if title_check and isinstance(title, str) and len(title) > TITLE_MAX_LENGTH:
+        raise ValueError(f"title must be at most {TITLE_MAX_LENGTH} characters")
+    quantity = meta.get("quantity")
+    if isinstance(quantity, bool) or not isinstance(quantity, int) or quantity < 1:
+        raise ValueError("quantity must be a positive integer")
     price = meta["price"]
     for field in ("list_price_rub", "quick_sale_rub"):
         v = price.get(field)
@@ -106,8 +116,8 @@ def validate_meta(raw: dict, *, ready_check: bool = True) -> dict:
     if ready_check and meta["status"] == "ready":
         if not meta.get("title") or not meta.get("city"):
             raise ValueError("ready requires title and city")
-        if price.get("list_price_rub") is None or not price.get("price_selected_by_owner"):
-            raise ValueError("ready requires an owner-approved asking price")
+        if price.get("list_price_rub") is None:
+            raise ValueError("ready requires a suggested asking price")
         if not filenames or meta["photos"].get("metadata_status") != "stripped_verified":
             raise ValueError("ready requires sanitized posting photos")
         if not meta.get("pickup_location") and not meta.get("delivery_terms"):
@@ -124,6 +134,7 @@ def to_queue_row(raw: dict, folder_name: str) -> dict:
         "status": meta["status"],
         "title": meta.get("title") or "",
         "city": meta.get("city") or "",
+        "quantity": meta["quantity"],
         "list_price_rub": price.get("list_price_rub") or "",
         "quick_sale_rub": price.get("quick_sale_rub") or "",
         "metadata_status": photo.get("metadata_status", ""),

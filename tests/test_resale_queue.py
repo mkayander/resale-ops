@@ -175,7 +175,8 @@ class ResaleQueueTest(unittest.TestCase):
 
     def test_realistic_cloud_metadata_indexes_price_and_photos(self):
         meta = {"id": "chigo-fkl-ml139r-20261018", "title": "CHIGO", "city": "Москва",
-                "status": "ready", "pickup_location": "Москва, метро Севастопольская",
+                "quantity": 3, "status": "ready",
+                "pickup_location": "Москва, метро Севастопольская",
                 "price": {"list_price_rub": 2900, "quick_sale_rub": 1900,
                           "price_selected_by_owner": True},
                 "photos": {"prepared_filenames": ["01_chigo_front.jpg",
@@ -183,9 +184,10 @@ class ResaleQueueTest(unittest.TestCase):
                            "metadata_status": "stripped_verified"}}
         row = to_queue_row(meta, meta["id"])
         self.assertEqual(row["list_price_rub"], 2900)
+        self.assertEqual(row["quantity"], 3)
         self.assertEqual(row["post_photo_count"], 2)
 
-    def test_ready_gate_enforces_owner_price_handoff_and_photos(self):
+    def test_ready_gate_enforces_suggested_price_handoff_and_photos(self):
         base = {"id": "test-chair", "title": "Chair", "city": "Москва",
                 "status": "ready", "price": {"list_price_rub": 1000,
                 "price_selected_by_owner": True},
@@ -196,8 +198,18 @@ class ResaleQueueTest(unittest.TestCase):
         base["pickup_location"] = "Москва"
         validate_meta(base)
         base["price"]["price_selected_by_owner"] = False
-        with self.assertRaisesRegex(ValueError, "owner-approved"):
-            validate_meta(base)
+        validate_meta(base)
+
+    def test_title_limit_and_quantity_are_validated(self):
+        valid = {"id": "test-chair", "title": "x" * 50, "quantity": 2}
+        self.assertEqual(validate_meta(valid)["quantity"], 2)
+        with self.assertRaisesRegex(ValueError, "at most 50"):
+            validate_meta({**valid, "title": "x" * 51})
+        for quantity in (0, -1, 1.5, True):
+            with self.subTest(quantity=quantity), self.assertRaisesRegex(
+                ValueError, "positive integer"
+            ):
+                validate_meta({**valid, "quantity": quantity})
 
     def test_sheets_upsert_preserves_other_rows_and_rejects_duplicates(self):
         existing = [SHEET_HEADERS, ["other-item", "ready"], ["my-item", "draft"]]
@@ -211,6 +223,9 @@ class ResaleQueueTest(unittest.TestCase):
             plan_upserts(existing, [{"id": "my-item"}, {"id": "my-item"}])
         with self.assertRaisesRegex(ValueError, "headers"):
             plan_upserts([["bad"]], [{"id": "my-item"}])
+        old_headers = [name for name in SHEET_HEADERS if name != "quantity"]
+        with self.assertRaisesRegex(ValueError, "insert quantity after city"):
+            plan_upserts([old_headers], [{"id": "my-item"}])
 
     def test_oversized_photo_keeps_original(self):
         with tempfile.TemporaryDirectory() as tmp:

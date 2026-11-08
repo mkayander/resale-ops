@@ -47,6 +47,11 @@ def _read_index(root: Path) -> list[dict[str, Any]]:
 def _header_check(values: list[list]) -> None:
     if not values:
         raise ValueError("Queue sheet has no header; initialize it before sync")
+    previous_headers = [name for name in SHEET_HEADERS if name != "quantity"]
+    if values[0][:len(previous_headers)] == previous_headers:
+        raise ValueError(
+            "Queue headers use the previous schema; insert quantity after city before sync"
+        )
     if values[0][:len(SHEET_HEADERS)] != SHEET_HEADERS:
         raise ValueError("Queue headers differ from expected schema; refusing write")
 
@@ -103,7 +108,7 @@ class QueueConflict(RuntimeError):
     """Queue changed during a write; caller must inspect before retrying."""
 
 
-_NUMERIC_COLUMNS = {"list_price_rub", "quick_sale_rub", "post_photo_count"}
+_NUMERIC_COLUMNS = {"quantity", "list_price_rub", "quick_sale_rub", "post_photo_count"}
 
 
 def _cell_equal(column: int, observed: object, expected: object) -> bool:
@@ -139,13 +144,20 @@ def _lookup(rows: list[list], item_id: str) -> tuple[int | None, list]:
 def _read_rows(api, spreadsheet_id: str, tab: str) -> list[list]:
     return api.get(
         spreadsheetId=spreadsheet_id,
-        range=f"{tab}!A1:M",
+        range=f"{tab}!A1:{_column_a1(len(SHEET_HEADERS) - 1)}",
         valueRenderOption="UNFORMATTED_VALUE",
     ).execute().get("values", [])
 
 
 def _column_a1(index: int) -> str:
-    return chr(ord("A") + index)
+    if index < 0:
+        raise ValueError("column index must be non-negative")
+    letters = ""
+    current = index + 1
+    while current:
+        current, remainder = divmod(current - 1, 26)
+        letters = chr(ord("A") + remainder) + letters
+    return letters
 
 
 def upsert_rows(service, spreadsheet_id: str, sheet_name: str, updates: list[dict]) -> int:
@@ -187,7 +199,7 @@ def upsert_rows(service, spreadsheet_id: str, sheet_name: str, updates: list[dic
             try:
                 api.append(
                     spreadsheetId=spreadsheet_id,
-                    range=f"{tab}!A:M",
+                    range=f"{tab}!A:{_column_a1(len(SHEET_HEADERS) - 1)}",
                     valueInputOption="RAW",
                     insertDataOption="INSERT_ROWS",
                     body={"values": [values]},

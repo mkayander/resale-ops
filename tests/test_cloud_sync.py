@@ -48,13 +48,19 @@ class FakeValues:
             rows = [list(x) for x in self.table]
             if self.numeric_as_float:
                 for row in rows[1:]:
-                    for index in (4, 5, 7):
+                    for index in (
+                        SHEET_HEADERS.index("quantity"),
+                        SHEET_HEADERS.index("list_price_rub"),
+                        SHEET_HEADERS.index("quick_sale_rub"),
+                        SHEET_HEADERS.index("post_photo_count"),
+                    ):
                         if index < len(row) and isinstance(row[index], int):
                             row[index] = float(row[index])
             if self.formatted_readback and self.updates and valueRenderOption != "UNFORMATTED_VALUE":
                 for row in rows[1:]:
-                    if len(row) > 4 and isinstance(row[4], (int, float)):
-                        row[4] = f"{row[4]:,} RUB"
+                    index = SHEET_HEADERS.index("list_price_rub")
+                    if len(row) > index and isinstance(row[index], (int, float)):
+                        row[index] = f"{row[index]:,} RUB"
             if self.corrupt and self.updates:
                 rows[-1][1] = "externally-changed"
             return {"values": rows}
@@ -66,7 +72,7 @@ class FakeValues:
                 raise RuntimeError("simulated connector failure")
             import re
             for data in body["data"]:
-                match = re.search(r"!([A-M])(\d+)$", data["range"])
+                match = re.search(r"!([A-Z])(\d+)$", data["range"])
                 assert match, data["range"]
                 row_index = int(match.group(2)) - 1
                 col_index = ord(match.group(1)) - ord("A")
@@ -130,7 +136,7 @@ class CloudSyncRegressionTest(unittest.TestCase):
             {"id": "my-item", "status": "ready", "list_price_rub": 2900}
         ])
         self.assertEqual(v.read_options, ["UNFORMATTED_VALUE"] * 3)
-        self.assertEqual(v.table[1][4], 2900)
+        self.assertEqual(v.table[1][SHEET_HEADERS.index("list_price_rub")], 2900)
 
     def test_partial_index_does_not_delete_other_items(self):
         v = FakeValues([SHEET_HEADERS, ["existing", "ready"]])
@@ -145,11 +151,11 @@ class CloudSyncRegressionTest(unittest.TestCase):
             {"id": "my-item", "status": "ready", "list_price_rub": 2900,
              "quick_sale_rub": 1900, "post_photo_count": 3}
         ]), 1)
-        self.assertEqual(v.table[1][4], 2900)
+        self.assertEqual(v.table[1][SHEET_HEADERS.index("list_price_rub")], 2900)
 
     def test_partial_patch_retains_price_photo_count_and_notes(self):
         existing = [SHEET_HEADERS, [
-            "my-item", "draft", "Original title", "Москва", 2900, 1900,
+            "my-item", "draft", "Original title", "Москва", 1, 2900, 1900,
             "stripped_verified", 3, "2026-10-18", "2026-10-18",
             "my-item", "https://drive.google.com/folder", "owner confirmed"
         ]]
@@ -163,7 +169,7 @@ class CloudSyncRegressionTest(unittest.TestCase):
 
     def test_explicit_clear_does_not_clear_other_fields(self):
         existing = [SHEET_HEADERS, [
-            "my-item", "draft", "Original title", "Москва", 2900, 1900,
+            "my-item", "draft", "Original title", "Москва", 1, 2900, 1900,
             "stripped_verified", 3, "2026-10-18", "2026-10-18",
             "my-item", "folder-url", "old notes"
         ]]
@@ -171,8 +177,8 @@ class CloudSyncRegressionTest(unittest.TestCase):
         upsert_rows(FakeService(fake), "test", "Queue", [
             {"id": "my-item", "notes": None}
         ])
-        self.assertEqual(fake.table[1][12], "")
-        self.assertEqual(fake.table[1][4], 2900)
+        self.assertEqual(fake.table[1][SHEET_HEADERS.index("notes")], "")
+        self.assertEqual(fake.table[1][SHEET_HEADERS.index("list_price_rub")], 2900)
 
     def test_failed_write_does_not_clear(self):
         v = FakeValues([SHEET_HEADERS, ["other", "ready"]], fail_update=True)
@@ -230,14 +236,15 @@ class CloudSyncRegressionTest(unittest.TestCase):
 
     def test_sparse_patch_keeps_other_chat_field_and_formulas(self):
         fake = FakeValues([SHEET_HEADERS, ["target", "draft", "=PROPER(A2)",
-                           "Москва", 2900]])
+                           "Москва", 1, 2900]])
         fake.before_identity = lambda v: v.table[1].extend(
             [""] * (len(SHEET_HEADERS) - len(v.table[1]))
         )
         upsert_rows(FakeService(fake), "test", "Queue",
                     [{"id": "target", "status": "ready"}])
         self.assertEqual(fake.table[1][2], "=PROPER(A2)")
-        self.assertEqual(fake.table[1][4], 2900)
+        self.assertEqual(fake.table[1][SHEET_HEADERS.index("quantity")], 1)
+        self.assertEqual(fake.table[1][SHEET_HEADERS.index("list_price_rub")], 2900)
         self.assertEqual(len(fake.updates), 1)
         self.assertTrue(fake.updates[0].endswith("!B2"))
 

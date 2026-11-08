@@ -68,7 +68,7 @@ def listing_digest(content: str) -> str:
 
 
 def make_target(item_id: str, listing: str, raw_meta: dict, folder_name: str) -> Target:
-    """Generate exact persistent values from one approved listing revision."""
+    """Generate exact persistent values from one validated listing revision."""
     if not isinstance(listing, str) or not listing.strip():
         raise ValueError("listing.md must contain approved listing text")
     meta = validate_meta(raw_meta)
@@ -106,7 +106,7 @@ def _equal_queue(a: dict | None, b: dict | None) -> bool:
     def comparable(field: str, value: object) -> object:
         if value is None or value == "":
             return ""
-        if field in {"list_price_rub", "quick_sale_rub", "post_photo_count"}:
+        if field in {"quantity", "list_price_rub", "quick_sale_rub", "post_photo_count"}:
             try:
                 return Decimal(str(value))
             except InvalidOperation:

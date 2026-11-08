@@ -51,8 +51,9 @@ existing baseline in the normal workflow.
    indivisible field: concurrent listing rewrites conflict. Include any
    dependent listing change in the same operation as a price/terms/condition
    change, then explicitly review the combined result before projecting.
-   Owner approval for a changed asking price must be reconfirmed; do not
-   reuse authorization tied to an older listing revision.
+   A changed asking price does not require owner approval, but it must update
+   the listing projection. Publication authorization remains tied to the
+   specific listing revision and cannot be reused after a price change.
 4. Upload `<operation_id>.json` **as a new raw file**, never update an old
    operation or rename it after success. Re-list and verify by `operation_id`
    and exact contents. If upload reports an error, inspect Drive first:
@@ -72,6 +73,12 @@ existing baseline in the normal workflow.
    and **"conflict"**. A successful journal append is not a guarantee that
    the current Queue row is up-to-date. Never re-submit a marketplace listing
    just to repair these saved records.
+
+Legacy journals created before the Queue gained `quantity` use one immutable
+`quantity-title-v1` migration operation. It must add `meta.quantity` and may
+shorten `meta.title` to the 50-character limit; no unrelated edits are allowed.
+The original baseline stays immutable, and replay accepts its pre-quantity hash
+only through this migration path.
 
 ### Important consistency limits
 
